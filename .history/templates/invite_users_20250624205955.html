@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Send Invitations - Modern360{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <span class="material-icons me-2" style="vertical-align: middle;">email</span>
+                        Send Assessment Invitations
+                    </h3>
+                    <small class="text-muted">For: {{ assessment.title }}</small>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="invitationForm">
+                        <div class="mb-4">
+                            <label for="emails" class="form-label">Email Addresses *</label>
+                            <textarea class="form-control" id="emails" name="emails" rows="6" required 
+                                      placeholder="Enter email addresses separated by commas&#10;&#10;Example:&#10;john.doe@company.com, jane.smith@company.com, &#10;manager@company.com"></textarea>
+                            <div class="form-text">
+                                Enter email addresses separated by commas. Each person will receive a personalized invitation link.
+                            </div>
+                        </div>
+                        
+                        <!-- Email Preview -->
+                        <div class="card bg-light mb-4">
+                            <div class="card-header bg-transparent">
+                                <h6 class="mb-0">
+                                    <span class="material-icons me-2" style="vertical-align: middle;">preview</span>
+                                    Email Preview
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="email-preview">
+                                    <div class="mb-3">
+                                        <strong>Subject:</strong> You have been invited to complete: {{ assessment.title }}
+                                    </div>
+                                    <hr>
+                                    <div class="email-content" style="font-family: Arial, sans-serif;">
+                                        <h4 style="color: #1976d2; margin-bottom: 20px;">Modern360 Assessment Invitation</h4>
+                                        <p>You have been invited to complete the assessment: <strong>{{ assessment.title }}</strong></p>
+                                        {% if assessment.description %}
+                                            <p>{{ assessment.description }}</p>
+                                        {% endif %}
+                                        <p>Click the button below to start the assessment:</p>
+                                        <div style="margin: 20px 0;">
+                                            <span style="display: inline-block; background-color: #1976d2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px;">Start Assessment</span>
+                                        </div>
+                                        <p style="color: #666; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                                            This is an automated email from Modern360 Assessment Platform.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Instructions -->
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <span class="material-icons me-2" style="vertical-align: middle;">info</span>
+                                Important Information
+                            </h6>
+                            <ul class="mb-0">
+                                <li>Each recipient will receive a unique, secure link to complete the assessment</li>
+                                <li>Responses are anonymous unless specifically configured otherwise</li>
+                                <li>Recipients can complete the assessment at their convenience</li>
+                                {% if assessment.deadline %}
+                                    <li><strong>Deadline:</strong> {{ assessment.deadline.strftime('%B %d, %Y') }}</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('edit_assessment', id=assessment.id) }}" class="btn btn-outline-secondary">
+                                <span class="material-icons me-2" style="vertical-align: middle;">arrow_back</span>
+                                Back to Assessment
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="material-icons me-2" style="vertical-align: middle;">send</span>
+                                Send Invitations
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Quick Add Buttons -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Quick Add Recipients</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <button type="button" class="btn btn-outline-primary w-100" onclick="addCommonEmails('team')">
+                                <span class="material-icons me-2">group</span>
+                                Add Team Members
+                            </button>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <button type="button" class="btn btn-outline-primary w-100" onclick="addCommonEmails('managers')">
+                                <span class="material-icons me-2">supervisor_account</span>
+                                Add Managers
+                            </button>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <button type="button" class="btn btn-outline-primary w-100" onclick="addCommonEmails('peers')">
+                                <span class="material-icons me-2">people</span>
+                                Add Peers
+                            </button>
+                        </div>
+                    </div>
+                    <small class="text-muted">Note: These buttons would be connected to your organization's directory in a full implementation.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('invitationForm').addEventListener('submit', function(e) {
+    const emails = document.getElementById('emails').value.trim();
+    if (!emails) {
+        e.preventDefault();
+        alert('Please enter at least one email address.');
+        return;
+    }
+    
+    // Validate email format
+    const emailList = emails.split(',').map(email => email.trim()).filter(email => email);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const invalidEmails = emailList.filter(email => !emailRegex.test(email));
+    
+    if (invalidEmails.length > 0) {
+        e.preventDefault();
+        alert('Please check the following email addresses: ' + invalidEmails.join(', '));
+        return;
+    }
+    
+    // Show confirmation
+    if (!confirm(`Send invitations to ${emailList.length} recipients?`)) {
+        e.preventDefault();
+        return;
+    }
+    
+    // Add loading state
+    const submitBtn = document.querySelector('button[type="submit"]');
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+    submitBtn.disabled = true;
+});
+
+function addCommonEmails(type) {
+    const emailsTextarea = document.getElementById('emails');
+    let currentEmails = emailsTextarea.value.trim();
+    
+    // Sample emails for demonstration
+    let newEmails = [];
+    switch(type) {
+        case 'team':
+            newEmails = ['team.member1@company.com', 'team.member2@company.com'];
+            break;
+        case 'managers':
+            newEmails = ['manager1@company.com', 'director@company.com'];
+            break;
+        case 'peers':
+            newEmails = ['peer1@company.com', 'peer2@company.com'];
+            break;
+    }
+    
+    if (currentEmails) {
+        currentEmails += ', ';
+    }
+    currentEmails += newEmails.join(', ');
+    
+    emailsTextarea.value = currentEmails;
+}
+
+// Email validation as user types
+document.getElementById('emails').addEventListener('input', function() {
+    const emails = this.value.trim();
+    if (emails) {
+        const emailList = emails.split(',').map(email => email.trim()).filter(email => email);
+        const validCount = emailList.filter(email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)).length;
+        
+        // Update helper text
+        const helpText = this.nextElementSibling;
+        if (emailList.length > 0) {
+            helpText.innerHTML = `${validCount} of ${emailList.length} email addresses appear valid.`;
+            if (validCount < emailList.length) {
+                helpText.className = 'form-text text-warning';
+            } else {
+                helpText.className = 'form-text text-success';
+            }
+        } else {
+            helpText.innerHTML = 'Enter email addresses separated by commas. Each person will receive a personalized invitation link.';
+            helpText.className = 'form-text';
+        }
+    }
+});
+</script>
+{% endblock %}

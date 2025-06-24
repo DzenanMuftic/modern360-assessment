@@ -1,0 +1,13 @@
+# Simple build commands for Render.com
+# Use these if the build script doesn't work
+
+# Build Command (copy this to Render dashboard):
+pip install --upgrade pip && pip install -r requirements.txt && python -c "import sys; sys.path.insert(0, '.'); from app import app, db; app.app_context().push(); db.create_all(); print('Setup complete')"
+
+# Start Command (copy this to Render dashboard):
+gunicorn app:app --bind 0.0.0.0:$PORT
+
+# Alternative Build Command (shorter):
+pip install -r requirements.txt
+
+# Note: Database tables will be created automatically on first run

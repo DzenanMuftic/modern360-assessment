@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Assessment Completed - Modern360{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 text-center">
+            <div class="card">
+                <div class="card-body py-5">
+                    <span class="material-icons text-warning mb-3" style="font-size: 4rem;">assignment_turned_in</span>
+                    <h2 class="text-warning mb-3">Assessment Already Completed</h2>
+                    <p class="text-muted">This assessment has already been completed.</p>
+                    <p class="text-muted">Thank you for your participation!</p>
+                    
+                    <div class="mt-4">
+                        <div class="alert alert-info">
+                            <span class="material-icons me-2" style="vertical-align: middle;">info</span>
+                            If you believe this is an error, please contact the assessment administrator.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
