@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+
+{% block title %}Self Assessment - {{ assessment.title }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <span class="material-icons me-2" style="vertical-align: middle;">self_improvement</span>
+                        Self Assessment: {{ assessment.title }}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if assessment.description %}
+                    <div class="alert alert-info">
+                        <span class="material-icons me-2" style="vertical-align: middle;">info</span>
+                        {{ assessment.description }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="alert alert-warning">
+                        <span class="material-icons me-2" style="vertical-align: middle;">lightbulb</span>
+                        <strong>Self-Assessment Instructions:</strong><br>
+                        Please be honest and reflective in your responses. This assessment is designed to help you identify your strengths and areas for improvement.
+                    </div>
+
+                    <form id="selfAssessmentForm">
+                        <!-- Leadership Skills Section -->
+                        <div class="section-header">
+                            <h4 class="text-primary">
+                                <span class="material-icons me-2" style="vertical-align: middle;">emoji_people</span>
+                                Leadership Skills
+                            </h4>
+                        </div>
+                        
+                        <div class="question-group mb-4">
+                            <label class="form-label">Rate your ability to inspire and motivate others:</label>
+                            <div class="rating-scale">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="leadership_inspire" id="leadership_inspire_1" value="1">
+                                    <label class="form-check-label" for="leadership_inspire_1">1 - Poor</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="leadership_inspire" id="leadership_inspire_2" value="2">
+                                    <label class="form-check-label" for="leadership_inspire_2">2 - Fair</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="leadership_inspire" id="leadership_inspire_3" value="3">
+                                    <label class="form-check-label" for="leadership_inspire_3">3 - Good</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="leadership_inspire" id="leadership_inspire_4" value="4">
+                                    <label class="form-check-label" for="leadership_inspire_4">4 - Very Good</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="leadership_inspire" id="leadership_inspire_5" value="5">
+                                    <label class="form-check-label" for="leadership_inspire_5">5 - Excellent</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="question-group mb-4">
+                            <label class="form-label">Rate your decision-making abilities:</label>
+                            <div class="rating-scale">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="leadership_decisions" id="leadership_decisions_1" value="1">
+                                    <label class="form-check-label" for="leadership_decisions_1">1 - Poor</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="leadership_decisions" id="leadership_decisions_2" value="2">
+                                    <label class="form-check-label" for="leadership_decisions_2">2 - Fair</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="leadership_decisions" id="leadership_decisions_3" value="3">
+                                    <label class="form-check-label" for="leadership_decisions_3">3 - Good</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="leadership_decisions" id="leadership_decisions_4" value="4">
+                                    <label class="form-check-label" for="leadership_decisions_4">4 - Very Good</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="leadership_decisions" id="leadership_decisions_5" value="5">
+                                    <label class="form-check-label" for="leadership_decisions_5">5 - Excellent</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Communication Skills Section -->
+                        <div class="section-header mt-5">
+                            <h4 class="text-primary">
+                                <span class="material-icons me-2" style="vertical-align: middle;">communication</span>
+                                Communication Skills
+                            </h4>
+                        </div>
+                        
+                        <div class="question-group mb-4">
+                            <label class="form-label">Rate your ability to communicate clearly and effectively:</label>
+                            <div class="rating-scale">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="communication_clarity" id="communication_clarity_1" value="1">
+                                    <label class="form-check-label" for="communication_clarity_1">1 - Poor</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="communication_clarity" id="communication_clarity_2" value="2">
+                                    <label class="form-check-label" for="communication_clarity_2">2 - Fair</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="communication_clarity" id="communication_clarity_3" value="3">
+                                    <label class="form-check-label" for="communication_clarity_3">3 - Good</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="communication_clarity" id="communication_clarity_4" value="4">
+                                    <label class="form-check-label" for="communication_clarity_4">4 - Very Good</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="communication_clarity" id="communication_clarity_5" value="5">
+                                    <label class="form-check-label" for="communication_clarity_5">5 - Excellent</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="question-group mb-4">
+                            <label class="form-label">Rate your listening skills:</label>
+                            <div class="rating-scale">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="communication_listening" id="communication_listening_1" value="1">
+                                    <label class="form-check-label" for="communication_listening_1">1 - Poor</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="communication_listening" id="communication_listening_2" value="2">
+                                    <label class="form-check-label" for="communication_listening_2">2 - Fair</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="communication_listening" id="communication_listening_3" value="3">
+                                    <label class="form-check-label" for="communication_listening_3">3 - Good</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="communication_listening" id="communication_listening_4" value="4">
+                                    <label class="form-check-label" for="communication_listening_4">4 - Very Good</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="communication_listening" id="communication_listening_5" value="5">
+                                    <label class="form-check-label" for="communication_listening_5">5 - Excellent</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Teamwork Section -->
+                        <div class="section-header mt-5">
+                            <h4 class="text-primary">
+                                <span class="material-icons me-2" style="vertical-align: middle;">group</span>
+                                Teamwork & Collaboration
+                            </h4>
+                        </div>
+                        
+                        <div class="question-group mb-4">
+                            <label class="form-label">Rate your ability to work effectively in teams:</label>
+                            <div class="rating-scale">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="teamwork_collaboration" id="teamwork_collaboration_1" value="1">
+                                    <label class="form-check-label" for="teamwork_collaboration_1">1 - Poor</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="teamwork_collaboration" id="teamwork_collaboration_2" value="2">
+                                    <label class="form-check-label" for="teamwork_collaboration_2">2 - Fair</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="teamwork_collaboration" id="teamwork_collaboration_3" value="3">
+                                    <label class="form-check-label" for="teamwork_collaboration_3">3 - Good</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="teamwork_collaboration" id="teamwork_collaboration_4" value="4">
+                                    <label class="form-check-label" for="teamwork_collaboration_4">4 - Very Good</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="teamwork_collaboration" id="teamwork_collaboration_5" value="5">
+                                    <label class="form-check-label" for="teamwork_collaboration_5">5 - Excellent</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Open-ended Questions -->
+                        <div class="section-header mt-5">
+                            <h4 class="text-primary">
+                                <span class="material-icons me-2" style="vertical-align: middle;">psychology</span>
+                                Reflection Questions
+                            </h4>
+                        </div>
+
+                        <div class="question-group mb-4">
+                            <label for="strengths" class="form-label">What do you consider your greatest strengths?</label>
+                            <textarea class="form-control" id="strengths" name="strengths" rows="3" 
+                                      placeholder="Describe your key strengths and what you do best..."></textarea>
+                        </div>
+
+                        <div class="question-group mb-4">
+                            <label for="improvement" class="form-label">What areas would you like to improve?</label>
+                            <textarea class="form-control" id="improvement" name="improvement" rows="3" 
+                                      placeholder="Identify areas where you'd like to grow and develop..."></textarea>
+                        </div>
+
+                        <div class="question-group mb-4">
+                            <label for="goals" class="form-label">What are your professional goals for the next year?</label>
+                            <textarea class="form-control" id="goals" name="goals" rows="3" 
+                                      placeholder="Describe your goals and aspirations..."></textarea>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="row mt-5">
+                            <div class="col-12 d-flex justify-content-between">
+                                <a href="{{ url_for('assessment_details', id=assessment.id) }}" class="btn btn-outline-secondary">
+                                    <span class="material-icons me-2" style="vertical-align: middle;">arrow_back</span>
+                                    Back to Assessment
+                                </a>
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <span class="material-icons me-2" style="vertical-align: middle;">check_circle</span>
+                                    Complete Self Assessment
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <span class="material-icons me-2" style="vertical-align: middle;">check_circle</span>
+                    Assessment Completed!
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p>Thank you for completing your self-assessment. Your responses have been saved successfully.</p>
+                <p>You can view your assessment details and responses from your dashboard.</p>
+            </div>
+            <div class="modal-footer">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-success">Go to Dashboard</a>
+                <a href="{{ url_for('assessment_details', id=assessment.id) }}" class="btn btn-outline-success">View Assessment Details</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.section-header {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.question-group {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #1976d2;
+}
+
+.rating-scale {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.form-check-inline {
+    margin-right: 0;
+}
+
+.form-check-input:checked {
+    background-color: #1976d2;
+    border-color: #1976d2;
+}
+
+@media (max-width: 768px) {
+    .rating-scale {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+</style>
+
+<script>
+document.getElementById('selfAssessmentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Collect all form data
+    const formData = new FormData(this);
+    const responses = {};
+    
+    // Collect all responses
+    for (let [key, value] of formData.entries()) {
+        responses[key] = value;
+    }
+    
+    // Validate that all required questions are answered
+    const requiredQuestions = ['leadership_inspire', 'leadership_decisions', 'communication_clarity', 'communication_listening', 'teamwork_collaboration'];
+    const unanswered = requiredQuestions.filter(q => !responses[q]);
+    
+    if (unanswered.length > 0) {
+        alert('Please answer all rating questions before submitting.');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = document.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+    
+    // Submit responses
+    fetch('/submit_self_assessment/{{ assessment.id }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(responses)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success modal
+            new bootstrap.Modal(document.getElementById('successModal')).show();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to submit assessment'));
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while submitting your assessment. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+});
+</script>
+{% endblock %}

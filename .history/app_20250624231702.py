@@ -397,66 +397,6 @@ def submit_response(token):
     
     return jsonify({'success': True})
 
-@app.route('/assessment/<int:id>/self-assess')
-def self_assess(id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    assessment = Assessment.query.get_or_404(id)
-    
-    # Check if user is the creator and if it's a self-assessment
-    if assessment.creator_id != session['user']['id']:
-        flash('Access denied.', 'error')
-        return redirect(url_for('dashboard'))
-    
-    if not assessment.is_self_assessment:
-        flash('This is not a self-assessment.', 'error')
-        return redirect(url_for('assessment_details', id=id))
-    
-    # Check if user has already completed the self-assessment
-    existing_response = AssessmentResponse.query.filter_by(
-        assessment_id=id, 
-        user_id=session['user']['id']
-    ).first()
-    
-    if existing_response:
-        flash('You have already completed this self-assessment.', 'info')
-        return redirect(url_for('assessment_details', id=id))
-    
-    return render_template('self_assessment.html', assessment=assessment)
-
-@app.route('/submit_self_assessment/<int:id>', methods=['POST'])
-def submit_self_assessment(id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    assessment = Assessment.query.get_or_404(id)
-    
-    # Verify permissions
-    if assessment.creator_id != session['user']['id'] or not assessment.is_self_assessment:
-        return jsonify({'error': 'Access denied'}), 403
-    
-    # Check if already completed
-    existing_response = AssessmentResponse.query.filter_by(
-        assessment_id=id, 
-        user_id=session['user']['id']
-    ).first()
-    
-    if existing_response:
-        return jsonify({'error': 'Self-assessment already completed'}), 400
-    
-    # Save response
-    response = AssessmentResponse(
-        assessment_id=id,
-        user_id=session['user']['id'],
-        responses=request.get_json()
-    )
-    
-    db.session.add(response)
-    db.session.commit()
-    
-    return jsonify({'success': True})
-
 def send_verification_email(email, verification_code, login_token):
     """Send verification email with code and direct login link"""
     try:

@@ -281,24 +281,17 @@ def create_assessment():
         return redirect(url_for('login'))
     
     if request.method == 'POST':
-        is_self_assessment = request.form.get('is_self_assessment') == 'on'
         assessment = Assessment(
             title=request.form['title'],
             description=request.form['description'],
             creator_id=session['user']['id'],
-            deadline=datetime.strptime(request.form['deadline'], '%Y-%m-%d') if request.form['deadline'] else None,
-            is_self_assessment=is_self_assessment
+            deadline=datetime.strptime(request.form['deadline'], '%Y-%m-%d') if request.form['deadline'] else None
         )
         db.session.add(assessment)
         db.session.commit()
         
-        if is_self_assessment:
-            flash('Self-assessment created successfully! You can now complete it yourself.', 'success')
-            # For self-assessment, redirect directly to the assessment response
-            return redirect(url_for('self_assess', id=assessment.id))
-        else:
-            flash('Assessment created successfully!', 'success')
-            return redirect(url_for('edit_assessment', id=assessment.id))
+        flash('Assessment created successfully!', 'success')
+        return redirect(url_for('edit_assessment', id=assessment.id))
     
     return render_template('create_assessment.html')
 
@@ -391,66 +384,6 @@ def submit_response(token):
     
     invitation.is_completed = True
     invitation.responded_at = datetime.utcnow()
-    
-    db.session.add(response)
-    db.session.commit()
-    
-    return jsonify({'success': True})
-
-@app.route('/assessment/<int:id>/self-assess')
-def self_assess(id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    assessment = Assessment.query.get_or_404(id)
-    
-    # Check if user is the creator and if it's a self-assessment
-    if assessment.creator_id != session['user']['id']:
-        flash('Access denied.', 'error')
-        return redirect(url_for('dashboard'))
-    
-    if not assessment.is_self_assessment:
-        flash('This is not a self-assessment.', 'error')
-        return redirect(url_for('assessment_details', id=id))
-    
-    # Check if user has already completed the self-assessment
-    existing_response = AssessmentResponse.query.filter_by(
-        assessment_id=id, 
-        user_id=session['user']['id']
-    ).first()
-    
-    if existing_response:
-        flash('You have already completed this self-assessment.', 'info')
-        return redirect(url_for('assessment_details', id=id))
-    
-    return render_template('self_assessment.html', assessment=assessment)
-
-@app.route('/submit_self_assessment/<int:id>', methods=['POST'])
-def submit_self_assessment(id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    assessment = Assessment.query.get_or_404(id)
-    
-    # Verify permissions
-    if assessment.creator_id != session['user']['id'] or not assessment.is_self_assessment:
-        return jsonify({'error': 'Access denied'}), 403
-    
-    # Check if already completed
-    existing_response = AssessmentResponse.query.filter_by(
-        assessment_id=id, 
-        user_id=session['user']['id']
-    ).first()
-    
-    if existing_response:
-        return jsonify({'error': 'Self-assessment already completed'}), 400
-    
-    # Save response
-    response = AssessmentResponse(
-        assessment_id=id,
-        user_id=session['user']['id'],
-        responses=request.get_json()
-    )
     
     db.session.add(response)
     db.session.commit()
