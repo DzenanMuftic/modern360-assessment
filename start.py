@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+Modern360 Assessment - Universal Startup Script
+Handles development, production, and deployment scenarios
+"""
+
 import os
 import sys
 import argparse
@@ -88,7 +94,15 @@ def run_main_only():
     """Run only the main application"""
     from app import app
     
-    if os.environ.get('DEPLOYMENT_ENV') == 'production':
+    # Auto-detect production environment for render.com and other platforms
+    is_production = (
+        os.environ.get('DEPLOYMENT_ENV') == 'production' or
+        os.environ.get('RENDER') or  # Render.com sets this
+        os.environ.get('HEROKU_APP_NAME') or  # Heroku
+        os.environ.get('RAILWAY_ENVIRONMENT')  # Railway
+    )
+    
+    if is_production:
         # Use Gunicorn for production
         port = int(os.environ.get('PORT', 5000))
         workers = int(os.environ.get('WEB_CONCURRENCY', multiprocessing.cpu_count() * 2 + 1))
@@ -105,7 +119,7 @@ def run_main_only():
             'wsgi:app'
         ]
         
-        print(f"🚀 Starting main app with Gunicorn on port {port}")
+        print(f"🚀 Starting main app with Gunicorn on port {port} (Production)")
         subprocess.run(cmd)
     else:
         # Development mode
@@ -181,11 +195,8 @@ def main():
     
     if args.setup_db:
         setup_database()
-        # If only setting up database, exit successfully
-        if not any([args.mode != 'dev', args.install]):
-            print("✅ Database setup completed successfully")
-            return
     
+    # Always run the specified mode (don't exit after setup)
     if args.mode == 'dev':
         print("🔥 Starting in DEVELOPMENT mode")
         run_development()
