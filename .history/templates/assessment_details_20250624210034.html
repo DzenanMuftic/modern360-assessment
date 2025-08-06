@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Assessment Details - Modern360{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Assessment Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-1">{{ assessment.title }}</h3>
+                            <small class="text-muted">Created on {{ assessment.created_at.strftime('%B %d, %Y') }}</small>
+                        </div>
+                        <div>
+                            {% if assessment.is_active %}
+                                <span class="badge bg-success fs-6">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% if assessment.description %}
+                <div class="card-body">
+                    <p class="mb-0">{{ assessment.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <span class="material-icons text-primary mb-2" style="font-size: 2rem;">email</span>
+                    <h4 class="text-primary">{{ invitations|length }}</h4>
+                    <p class="text-muted mb-0">Invitations Sent</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <span class="material-icons text-success mb-2" style="font-size: 2rem;">assignment_turned_in</span>
+                    <h4 class="text-success">{{ responses|length }}</h4>
+                    <p class="text-muted mb-0">Responses</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <span class="material-icons text-warning mb-2" style="font-size: 2rem;">hourglass_empty</span>
+                    <h4 class="text-warning">{{ invitations|selectattr('is_completed', 'equalto', false)|list|length }}</h4>
+                    <p class="text-muted mb-0">Pending</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-info">
+                <div class="card-body">
+                    <span class="material-icons text-info mb-2" style="font-size: 2rem;">analytics</span>
+                    <h4 class="text-info">
+                        {% if invitations|length > 0 %}
+                            {{ "%.0f"|format((responses|length / invitations|length) * 100) }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </h4>
+                    <p class="text-muted mb-0">Response Rate</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Invitations List -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <span class="material-icons me-2" style="vertical-align: middle;">people</span>
+                        Invitations
+                    </h5>
+                    <a href="{{ url_for('invite_users', id=assessment.id) }}" class="btn btn-sm btn-primary">
+                        <span class="material-icons me-1" style="font-size: 16px;">add</span>
+                        Add More
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if invitations %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Email</th>
+                                        <th>Status</th>
+                                        <th>Sent</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for invitation in invitations %}
+                                    <tr>
+                                        <td>{{ invitation.email }}</td>
+                                        <td>
+                                            {% if invitation.is_completed %}
+                                                <span class="badge bg-success">Completed</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ invitation.sent_at.strftime('%m/%d/%Y') }}</small>
+                                        </td>
+                                        <td>
+                                            {% if not invitation.is_completed %}
+                                                <button class="btn btn-sm btn-outline-primary" onclick="resendInvitation('{{ invitation.email }}')">
+                                                    <span class="material-icons" style="font-size: 14px;">refresh</span>
+                                                </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <span class="material-icons text-muted mb-2" style="font-size: 3rem;">email</span>
+                            <p class="text-muted">No invitations sent yet.</p>
+                            <a href="{{ url_for('invite_users', id=assessment.id) }}" class="btn btn-primary">
+                                Send First Invitation
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Responses -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <span class="material-icons me-2" style="vertical-align: middle;">assignment</span>
+                        Recent Responses
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if responses %}
+                        <div class="list-group list-group-flush">
+                            {% for response in responses[:5] %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <h6 class="mb-1">Response #{{ response.id }}</h6>
+                                    <small class="text-muted">{{ response.submitted_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewResponse({{ response.id }})">
+                                    <span class="material-icons" style="font-size: 16px;">visibility</span>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if responses|length > 5 %}
+                            <div class="text-center mt-3">
+                                <button class="btn btn-outline-primary btn-sm">View All Responses</button>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <span class="material-icons text-muted mb-2" style="font-size: 3rem;">assignment</span>
+                            <p class="text-muted">No responses yet.</p>
+                            <small class="text-muted">Responses will appear here once participants complete the assessment.</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <button class="btn btn-outline-primary w-100" onclick="downloadReport()">
+                                <span class="material-icons me-2">download</span>
+                                Download Report
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <button class="btn btn-outline-success w-100" onclick="exportData()">
+                                <span class="material-icons me-2">table_chart</span>
+                                Export Data
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('edit_assessment', id=assessment.id) }}" class="btn btn-outline-secondary w-100">
+                                <span class="material-icons me-2">edit</span>
+                                Edit Assessment
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <button class="btn btn-outline-info w-100" onclick="shareResults()">
+                                <span class="material-icons me-2">share</span>
+                                Share Results
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                <span class="material-icons me-2" style="vertical-align: middle;">arrow_back</span>
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function resendInvitation(email) {
+    if (confirm(`Resend invitation to ${email}?`)) {
+        // In a real implementation, this would make an API call
+        alert('Invitation resent successfully!');
+    }
+}
+
+function viewResponse(responseId) {
+    // In a real implementation, this would open a modal or new page with response details
+    alert(`Viewing response #${responseId} - This would show detailed response data.`);
+}
+
+function downloadReport() {
+    alert('Downloading comprehensive assessment report... This feature would generate a PDF report.');
+}
+
+function exportData() {
+    alert('Exporting data to CSV... This feature would download raw response data.');
+}
+
+function shareResults() {
+    alert('Sharing results... This feature would generate a shareable link or send summary emails.');
+}
+
+// Auto-refresh every 30 seconds for real-time updates
+setInterval(function() {
+    // In a real implementation, this would update the statistics via AJAX
+    console.log('Checking for new responses...');
+}, 30000);
+</script>
+{% endblock %}

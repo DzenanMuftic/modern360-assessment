@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Email - Modern360{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card verify-card">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <span class="material-icons verify-icon">mark_email_read</span>
+                        <h2 class="card-title h4 mt-3 mb-2">Check Your Email</h2>
+                        <p class="text-muted">Enter the 6-digit code sent to:</p>
+                        <p class="email-display">{{ verification.email }}</p>
+                    </div>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" class="verify-form">
+                        <div class="mb-4">
+                            <label for="code" class="form-label">Verification Code</label>
+                            <input type="text" 
+                                   class="form-control form-control-lg text-center code-input" 
+                                   id="code" 
+                                   name="code" 
+                                   placeholder="000000"
+                                   maxlength="6"
+                                   pattern="[0-9]{6}"
+                                   required 
+                                   autocomplete="one-time-code"
+                                   inputmode="numeric">
+                            <div class="form-text">
+                                The code expires in <span id="countdown"></span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                            <span class="material-icons me-2">verified_user</span>
+                            Verify & Login
+                        </button>
+                    </form>
+
+                    <div class="text-center">
+                        <p class="mb-3">
+                            <small class="text-muted">Didn't receive the code?</small>
+                        </p>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-secondary">
+                            <span class="material-icons me-2">refresh</span>
+                            Request New Code
+                        </a>
+                    </div>
+
+                    <div class="divider">
+                        <span>or</span>
+                    </div>
+
+                    <div class="text-center">
+                        <a href="{{ url_for('index') }}" class="btn btn-link">
+                            <span class="material-icons me-2">arrow_back</span>
+                            Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <div class="help-info">
+                    <span class="material-icons">help_outline</span>
+                    <small class="text-muted">
+                        Check your spam folder if you don't see the email.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const codeInput = document.getElementById('code');
+    const form = document.querySelector('.verify-form');
+    
+    // Auto-submit when 6 digits are entered
+    codeInput.addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, ''); // Only allow digits
+        if (this.value.length === 6) {
+            form.submit();
+        }
+    });
+    
+    // Focus on code input
+    codeInput.focus();
+    
+    // Countdown timer
+    const expiresAt = new Date('{{ verification.expires_at.isoformat() }}Z');
+    const countdownElement = document.getElementById('countdown');
+    
+    function updateCountdown() {
+        const now = new Date();
+        const timeLeft = expiresAt - now;
+        
+        if (timeLeft <= 0) {
+            countdownElement.textContent = 'expired';
+            countdownElement.parentElement.innerHTML = '<span class="text-danger">Code has expired</span>';
+            codeInput.disabled = true;
+            return;
+        }
+        
+        const minutes = Math.floor(timeLeft / 60000);
+        const seconds = Math.floor((timeLeft % 60000) / 1000);
+        countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+});
+</script>
+
+<style>
+.verify-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    margin-top: 50px;
+}
+
+.verify-icon {
+    font-size: 4rem;
+    color: #1976d2;
+    opacity: 0.8;
+}
+
+.email-display {
+    font-weight: 600;
+    color: #1976d2;
+    font-size: 16px;
+    margin: 0;
+}
+
+.code-input {
+    font-family: 'Courier New', monospace;
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.code-input:focus {
+    border-color: #1976d2;
+    box-shadow: 0 0 0 0.2rem rgba(25, 118, 210, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    text-transform: none;
+    padding: 12px 24px;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+    transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+    background: #6c757d;
+    opacity: 0.6;
+    transform: none;
+}
+
+.divider {
+    position: relative;
+    text-align: center;
+    margin: 30px 0;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #dee2e6;
+}
+
+.divider span {
+    background-color: white;
+    padding: 0 15px;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.help-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.help-info .material-icons {
+    font-size: 16px;
+    color: #17a2b8;
+}
+
+.btn-link {
+    color: #6c757d;
+    text-decoration: none;
+}
+
+.btn-link:hover {
+    color: #1976d2;
+}
+
+@media (max-width: 576px) {
+    .verify-card {
+        margin: 20px 15px;
+    }
+    
+    .card-body {
+        padding: 30px 20px !important;
+    }
+    
+    .code-input {
+        font-size: 20px;
+        letter-spacing: 2px;
+        padding: 15px;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Edit User - Modern360 Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2 mb-0">
+        <i class="fas fa-user-edit me-2 text-primary"></i>Edit User: {{ user.name }}
+    </h1>
+    <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Users
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-circle me-2"></i>User Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">
+                                    <i class="fas fa-user me-1"></i>Full Name *
+                                </label>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                       value="{{ user.name }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope me-1"></i>Email Address
+                                </label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{{ user.email }}" readonly>
+                                <small class="form-text text-muted">Email cannot be changed</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="company" class="form-label">
+                            <i class="fas fa-building me-1"></i>Company/Employer
+                        </label>
+                        <input type="text" class="form-control" id="company" name="company" 
+                               value="{{ user.company or '' }}" placeholder="Enter company or employer name (optional)">
+                        <small class="form-text text-muted">The organization where this person works</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="role" class="form-label">
+                            <i class="fas fa-shield-alt me-1"></i>User Role
+                        </label>
+                        <select class="form-select" id="role" name="role">
+                            <option value="user" {{ 'selected' if user.role == 'user' else '' }}>
+                                User - Can respond to assessments
+                            </option>
+                            <option value="manager" {{ 'selected' if user.role == 'manager' else '' }}>
+                                Manager - Can create and manage assessments
+                            </option>
+                            <option value="admin" {{ 'selected' if user.role == 'admin' else '' }}>
+                                Admin - Full system access
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                   {{ 'checked' if user.is_active else '' }}>
+                            <label class="form-check-label" for="is_active">
+                                <i class="fas fa-check-circle me-1"></i>Active User
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update User
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- User Statistics -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>User Statistics
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-primary">{{ user.created_assessments|length }}</h4>
+                            <small class="text-muted">Assessments Created</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-success">{{ user.responses|length }}</h4>
+                            <small class="text-muted">Responses Submitted</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-info">{{ user.invitations_sent|length }}</h4>
+                            <small class="text-muted">Invitations Sent</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-muted">{{ user.created_at.strftime('%m/%d/%Y') }}</h4>
+                            <small class="text-muted">Member Since</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

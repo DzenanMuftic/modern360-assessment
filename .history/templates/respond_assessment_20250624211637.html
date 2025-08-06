@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+
+{% block title %}Complete Assessment - Modern360{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Assessment Header -->
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <span class="material-icons text-primary mb-3" style="font-size: 3rem;">assessment</span>
+                    <h2 class="mb-3">{{ assessment.title }}</h2>
+                    {% if assessment.description %}
+                        <p class="text-muted">{{ assessment.description }}</p>
+                    {% endif %}
+                    <div class="alert alert-info">
+                        <span class="material-icons me-2" style="vertical-align: middle;">info</span>
+                        Your responses are confidential and will help provide valuable feedback.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Assessment Form -->
+            <form id="assessmentForm">
+                <!-- Leadership Section -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <span class="material-icons me-2" style="vertical-align: middle;">star</span>
+                            Leadership & Vision
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Question 1 -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">1. Rate this person's ability to inspire and motivate others.</label>
+                            <div class="rating-group">
+                                <div class="d-flex gap-3 flex-wrap">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q1" value="1" id="q1_1">
+                                        <label class="form-check-label" for="q1_1">1 - Poor</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q1" value="2" id="q1_2">
+                                        <label class="form-check-label" for="q1_2">2 - Below Average</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q1" value="3" id="q1_3">
+                                        <label class="form-check-label" for="q1_3">3 - Average</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q1" value="4" id="q1_4">
+                                        <label class="form-check-label" for="q1_4">4 - Good</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q1" value="5" id="q1_5">
+                                        <label class="form-check-label" for="q1_5">5 - Excellent</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Question 2 -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">2. How effectively does this person communicate their vision?</label>
+                            <div class="rating-group">
+                                <div class="d-flex gap-3 flex-wrap">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q2" value="1" id="q2_1">
+                                        <label class="form-check-label" for="q2_1">1 - Poor</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q2" value="2" id="q2_2">
+                                        <label class="form-check-label" for="q2_2">2 - Below Average</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q2" value="3" id="q2_3">
+                                        <label class="form-check-label" for="q2_3">3 - Average</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q2" value="4" id="q2_4">
+                                        <label class="form-check-label" for="q2_4">4 - Good</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q2" value="5" id="q2_5">
+                                        <label class="form-check-label" for="q2_5">5 - Excellent</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Question 3 -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">3. Rate their decision-making skills under pressure.</label>
+                            <div class="rating-group">
+                                <div class="d-flex gap-3 flex-wrap">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q3" value="1" id="q3_1">
+                                        <label class="form-check-label" for="q3_1">1 - Poor</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q3" value="2" id="q3_2">
+                                        <label class="form-check-label" for="q3_2">2 - Below Average</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q3" value="3" id="q3_3">
+                                        <label class="form-check-label" for="q3_3">3 - Average</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q3" value="4" id="q3_4">
+                                        <label class="form-check-label" for="q3_4">4 - Good</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q3" value="5" id="q3_5">
+                                        <label class="form-check-label" for="q3_5">5 - Excellent</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Question 4 -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">4. How well does this person delegate responsibilities?</label>
+                            <div class="rating-group">
+                                <div class="d-flex gap-3 flex-wrap">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q4" value="1" id="q4_1">
+                                        <label class="form-check-label" for="q4_1">1 - Poor</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q4" value="2" id="q4_2">
+                                        <label class="form-check-label" for="q4_2">2 - Below Average</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q4" value="3" id="q4_3">
+                                        <label class="form-check-label" for="q4_3">3 - Average</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q4" value="4" id="q4_4">
+                                        <label class="form-check-label" for="q4_4">4 - Good</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q4" value="5" id="q4_5">
+                                        <label class="form-check-label" for="q4_5">5 - Excellent</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Question 5 - Open ended -->
+                        <div class="mb-0">
+                            <label class="form-label fw-semibold">5. What is this person's greatest leadership strength?</label>
+                            <textarea class="form-control" name="q5" rows="3" placeholder="Please provide specific examples..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Communication Section -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <span class="material-icons me-2" style="vertical-align: middle;">forum</span>
+                            Communication Skills
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Questions 6-9 would follow similar pattern -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">6. How clearly does this person communicate ideas?</label>
+                            <div class="rating-group">
+                                <div class="d-flex gap-3 flex-wrap">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q6" value="1" id="q6_1">
+                                        <label class="form-check-label" for="q6_1">1 - Poor</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q6" value="2" id="q6_2">
+                                        <label class="form-check-label" for="q6_2">2 - Below Average</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q6" value="3" id="q6_3">
+                                        <label class="form-check-label" for="q6_3">3 - Average</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q6" value="4" id="q6_4">
+                                        <label class="form-check-label" for="q6_4">4 - Good</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q6" value="5" id="q6_5">
+                                        <label class="form-check-label" for="q6_5">5 - Excellent</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-0">
+                            <label class="form-label fw-semibold">7. Describe a time when this person communicated effectively in a challenging situation.</label>
+                            <textarea class="form-control" name="q7" rows="3" placeholder="Please provide specific examples..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Teamwork Section -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <span class="material-icons me-2" style="vertical-align: middle;">group</span>
+                            Teamwork & Collaboration
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">8. How well does this person work with others?</label>
+                            <div class="rating-group">
+                                <div class="d-flex gap-3 flex-wrap">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q8" value="1" id="q8_1">
+                                        <label class="form-check-label" for="q8_1">1 - Poor</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q8" value="2" id="q8_2">
+                                        <label class="form-check-label" for="q8_2">2 - Below Average</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q8" value="3" id="q8_3">
+                                        <label class="form-check-label" for="q8_3">3 - Average</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q8" value="4" id="q8_4">
+                                        <label class="form-check-label" for="q8_4">4 - Good</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q8" value="5" id="q8_5">
+                                        <label class="form-check-label" for="q8_5">5 - Excellent</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-0">
+                            <label class="form-label fw-semibold">9. What could this person do to be a better team player?</label>
+                            <textarea class="form-control" name="q9" rows="3" placeholder="Please provide constructive feedback..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Professional Growth Section -->
+                <div class="card mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <span class="material-icons me-2" style="vertical-align: middle;">trending_up</span>
+                            Professional Growth
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">10. How proactive is this person in seeking learning opportunities?</label>
+                            <div class="rating-group">
+                                <div class="d-flex gap-3 flex-wrap">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q10" value="1" id="q10_1">
+                                        <label class="form-check-label" for="q10_1">1 - Poor</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q10" value="2" id="q10_2">
+                                        <label class="form-check-label" for="q10_2">2 - Below Average</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q10" value="3" id="q10_3">
+                                        <label class="form-check-label" for="q10_3">3 - Average</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q10" value="4" id="q10_4">
+                                        <label class="form-check-label" for="q10_4">4 - Good</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="q10" value="5" id="q10_5">
+                                        <label class="form-check-label" for="q10_5">5 - Excellent</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">11. What areas should this person focus on for development?</label>
+                            <textarea class="form-control" name="q11" rows="3" placeholder="Please provide specific areas for improvement..."></textarea>
+                        </div>
+                        
+                        <div class="mb-0">
+                            <label class="form-label fw-semibold">12. What are this person's top 3 strengths?</label>
+                            <textarea class="form-control" name="q12" rows="3" placeholder="List their key strengths..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Progress Indicator -->
+                <div class="card bg-light mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">Progress</span>
+                            <div class="progress flex-grow-1 mx-3" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar" style="width: 0%" id="progressBar"></div>
+                            </div>
+                            <span class="text-muted" id="progressText">0%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="card">
+                    <div class="card-body text-center">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                            <span class="material-icons me-2" style="vertical-align: middle;">send</span>
+                            Submit Assessment
+                        </button>
+                        <p class="text-muted mt-3 mb-0">
+                            <small>Thank you for taking the time to provide this valuable feedback!</small>
+                        </p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const form = document.getElementById('assessmentForm');
+const progressBar = document.getElementById('progressBar');
+const progressText = document.getElementById('progressText');
+const submitBtn = document.getElementById('submitBtn');
+
+// Track form completion
+function updateProgress() {
+    const radioQuestions = ['q1', 'q2', 'q3', 'q4', 'q6', 'q8', 'q10'];
+    const textQuestions = ['q5', 'q7', 'q9', 'q11', 'q12'];
+    const totalQuestions = radioQuestions.length + textQuestions.length;
+    let completed = 0;
+    
+    // Check radio questions
+    radioQuestions.forEach(name => {
+        if (document.querySelector(`input[name="${name}"]:checked`)) {
+            completed++;
+        }
+    });
+    
+    // Check text questions
+    textQuestions.forEach(name => {
+        const textarea = document.querySelector(`textarea[name="${name}"]`);
+        if (textarea && textarea.value.trim().length > 0) {
+            completed++;
+        }
+    });
+    
+    const percentage = Math.round((completed / totalQuestions) * 100);
+    progressBar.style.width = percentage + '%';
+    progressText.textContent = percentage + '%';
+    
+    // Enable submit button when form is complete
+    submitBtn.disabled = percentage < 100;
+    
+    if (percentage === 100) {
+        progressBar.classList.add('bg-success');
+        submitBtn.classList.remove('btn-primary');
+        submitBtn.classList.add('btn-success');
+    } else {
+        progressBar.classList.remove('bg-success');
+        submitBtn.classList.remove('btn-success');
+        submitBtn.classList.add('btn-primary');
+    }
+}
+
+// Add event listeners
+document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', updateProgress);
+});
+
+document.querySelectorAll('textarea').forEach(textarea => {
+    textarea.addEventListener('input', updateProgress);
+});
+
+// Form submission
+form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Collect all responses
+    const responses = {};
+    
+    // Collect radio responses
+    document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+        responses[radio.name] = radio.value;
+    });
+    
+    // Collect textarea responses
+    document.querySelectorAll('textarea').forEach(textarea => {
+        responses[textarea.name] = textarea.value.trim();
+    });
+    
+    // Show loading state
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+    submitBtn.disabled = true;
+    
+    // Submit responses
+    fetch(`/submit_response/{{ invitation.token }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(responses)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            document.body.innerHTML = `
+                <div class="container my-5">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-6 text-center">
+                            <div class="card">
+                                <div class="card-body py-5">
+                                    <span class="material-icons text-success mb-3" style="font-size: 4rem;">check_circle</span>
+                                    <h2 class="text-success mb-3">Thank You!</h2>
+                                    <p class="text-muted">Your assessment has been submitted successfully.</p>
+                                    <p class="text-muted">Your feedback is valuable and will help in professional development.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            alert('Error submitting assessment. Please try again.');
+            submitBtn.innerHTML = '<span class="material-icons me-2" style="vertical-align: middle;">send</span>Submit Assessment';
+            submitBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error submitting assessment. Please try again.');
+        submitBtn.innerHTML = '<span class="material-icons me-2" style="vertical-align: middle;">send</span>Submit Assessment';
+        submitBtn.disabled = false;
+    });
+});
+
+// Auto-save draft (optional)
+let autoSaveTimer;
+function autoSave() {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(() => {
+        console.log('Auto-saving draft...');
+        // In a real implementation, this would save the current state
+    }, 30000);
+}
+
+document.querySelectorAll('input, textarea').forEach(element => {
+    element.addEventListener('input', autoSave);
+});
+
+// Initial progress check
+updateProgress();
+</script>
+{% endblock %}

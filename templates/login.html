@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Modern360{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card login-card">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <span class="material-icons login-icon">account_circle</span>
+                        <h2 class="card-title h4 mt-3 mb-2">Welcome to Modern360</h2>
+                        <p class="text-muted">Enter your email to receive a login code</p>
+                    </div>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" class="login-form">
+                        <div class="mb-4">
+                            <label for="email" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <span class="material-icons">email</span>
+                                </span>
+                                <input type="email" 
+                                       class="form-control form-control-lg" 
+                                       id="email" 
+                                       name="email" 
+                                       placeholder="Enter your email"
+                                       required 
+                                       autocomplete="email"
+                                       value="{{ request.form.email if request.form.email }}">
+                            </div>
+                            <div class="form-text">
+                                We'll send you a secure login code to this email address.
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                            <span class="material-icons me-2">send</span>
+                            Send Login Code
+                        </button>
+                    </form>
+
+                    <div class="divider">
+                        <span>or</span>
+                    </div>
+
+                    <div class="text-center">
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <span class="material-icons me-2">arrow_back</span>
+                            Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <div class="security-info">
+                    <span class="material-icons">security</span>
+                    <small class="text-muted">
+                        Your email is secure and will only be used for authentication.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.login-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    margin-top: 50px;
+}
+
+.login-icon {
+    font-size: 4rem;
+    color: #1976d2;
+    opacity: 0.8;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+.form-control:focus {
+    border-color: #1976d2;
+    box-shadow: 0 0 0 0.2rem rgba(25, 118, 210, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    text-transform: none;
+    padding: 12px 24px;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+    transform: translateY(-1px);
+}
+
+.divider {
+    position: relative;
+    text-align: center;
+    margin: 30px 0;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #dee2e6;
+}
+
+.divider span {
+    background-color: white;
+    padding: 0 15px;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.security-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.security-info .material-icons {
+    font-size: 16px;
+    color: #28a745;
+}
+
+@media (max-width: 576px) {
+    .login-card {
+        margin: 20px 15px;
+    }
+    
+    .card-body {
+        padding: 30px 20px !important;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,455 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Admin Login - Modern360{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="container-fluid">
+        <div class="row min-vh-100 align-items-center justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-4">
+                <!-- Logo Section -->
+                <div class="text-center mb-4">
+                    <div class="logo-container mb-3">
+                        <i class="fas fa-shield-alt logo-icon"></i>
+                    </div>
+                    <h1 class="app-title">Modern360</h1>
+                    <p class="app-subtitle">Admin Dashboard</p>
+                </div>
+
+                <!-- Login Form Card -->
+                <div class="card login-card shadow-lg border-0">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="text-center mb-4">
+                            <h4 class="login-title mb-2">
+                                <i class="fas fa-user-shield me-2"></i>Admin Access
+                            </h4>
+                            <p class="text-muted">Enter your admin credentials to continue</p>
+                        </div>
+
+                        <form method="POST" class="login-form">
+                            <div class="mb-3">
+                                <label for="username" class="form-label fw-semibold">
+                                    <i class="fas fa-user me-2 text-primary"></i>Username
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="username" name="username" 
+                                       required placeholder="Enter admin username" autocomplete="username">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="password" class="form-label fw-semibold">
+                                    <i class="fas fa-lock me-2 text-primary"></i>Password
+                                </label>
+                                <div class="password-input-group">
+                                    <input type="password" class="form-control form-control-lg" id="password" name="password" 
+                                           required placeholder="Enter admin password" autocomplete="current-password">
+                                    <button type="button" class="btn btn-outline-secondary password-toggle" onclick="togglePassword()">
+                                        <i class="fas fa-eye" id="toggleIcon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary btn-lg login-btn">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login to Dashboard
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center">
+                            <div class="security-notice">
+                                <i class="fas fa-shield-alt text-success me-2"></i>
+                                <small class="text-muted">Secure admin access protected</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer Links -->
+                <div class="text-center mt-4">
+                    <a href="http://localhost:5000" class="btn btn-outline-light btn-sm back-link">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Main Application
+                    </a>
+                </div>
+                
+                <!-- Help Text -->
+                <div class="text-center mt-3">
+                    <small class="help-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Need help? Contact your system administrator
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Base Styles */
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+}
+
+.login-container {
+    min-height: 100vh;
+    position: relative;
+}
+
+.login-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.main-content {
+    padding: 0;
+}
+
+/* Logo and Branding */
+.logo-container {
+    display: inline-block;
+    position: relative;
+}
+
+.logo-icon {
+    font-size: 3rem;
+    color: #fff;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.app-title {
+    color: #fff;
+    font-weight: 700;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.app-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.1rem;
+    font-weight: 300;
+}
+
+/* Login Card */
+.login-card {
+    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.login-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+}
+
+.login-title {
+    color: #333;
+    font-weight: 600;
+}
+
+/* Form Elements */
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    transform: translateY(-2px);
+}
+
+.form-control-lg {
+    padding: 1rem 1.25rem;
+    font-size: 1.1rem;
+}
+
+.form-label {
+    color: #495057;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Password Toggle */
+.password-input-group {
+    position: relative;
+    display: flex;
+}
+
+.password-input-group .form-control {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: none;
+}
+
+.password-toggle {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: none;
+    border: 2px solid #e9ecef;
+    border-left: none;
+    padding: 0.75rem 1rem;
+}
+
+.password-toggle:hover {
+    background-color: #f8f9fa;
+}
+
+/* Login Button */
+.login-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.login-btn:hover::before {
+    left: 100%;
+}
+
+.login-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+}
+
+.login-btn:active {
+    transform: translateY(-1px);
+}
+
+/* Security Notice */
+.security-notice {
+    background: rgba(40, 167, 69, 0.1);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    display: inline-block;
+}
+
+/* Footer Elements */
+.back-link {
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 0.5rem 1.5rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.back-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.help-text {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 576px) {
+    .app-title {
+        font-size: 2rem;
+    }
+    
+    .app-subtitle {
+        font-size: 1rem;
+    }
+    
+    .logo-icon {
+        font-size: 2.5rem;
+    }
+    
+    .login-card .card-body {
+        padding: 1.5rem !important;
+    }
+    
+    .login-title {
+        font-size: 1.3rem;
+    }
+    
+    .form-control-lg {
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+    }
+    
+    .login-btn {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* Tablet Styles */
+@media (min-width: 577px) and (max-width: 768px) {
+    .app-title {
+        font-size: 2.2rem;
+    }
+    
+    .login-card .card-body {
+        padding: 2rem !important;
+    }
+}
+
+/* Large Screen Optimization */
+@media (min-width: 1200px) {
+    .login-card {
+        max-width: 450px;
+        margin: 0 auto;
+    }
+}
+
+/* Landscape Mobile */
+@media (max-height: 600px) and (orientation: landscape) {
+    .app-title {
+        font-size: 1.8rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .app-subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .logo-icon {
+        font-size: 2rem;
+    }
+    
+    .login-container {
+        padding: 1rem 0;
+    }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .login-card {
+        backdrop-filter: blur(25px);
+    }
+}
+
+/* Animation for page load */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.logo-container {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+/* Focus improvements for accessibility */
+.form-control:focus,
+.btn:focus {
+    outline: 3px solid rgba(102, 126, 234, 0.3);
+    outline-offset: 2px;
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+    .login-card {
+        background: rgba(30, 30, 30, 0.95);
+        color: #fff;
+    }
+    
+    .login-title,
+    .form-label {
+        color: #fff;
+    }
+    
+    .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #fff;
+    }
+    
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+}
+</style>
+
+<script>
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
+
+// Add some interactive feedback
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('.form-control');
+    
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('focused');
+        });
+    });
+    
+    // Add loading state to login button
+    const loginForm = document.querySelector('.login-form');
+    const loginBtn = document.querySelector('.login-btn');
+    
+    loginForm.addEventListener('submit', function() {
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing in...';
+        loginBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

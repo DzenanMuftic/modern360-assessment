@@ -1,0 +1,72 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Edit Company - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-building me-2"></i>Edit Company: {{ company.name }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Company Name *</label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{{ company.name }}" required placeholder="Enter company name">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" 
+                                  placeholder="Optional company description">{{ company.description or '' }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                   {% if company.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">
+                                Active Company
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin_companies') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Company
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Company Statistics -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar me-2"></i>Company Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <h3 class="text-primary">{{ company.users|length }}</h3>
+                        <p class="text-muted">Users</p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <h3 class="text-success">{{ company.assessments|length }}</h3>
+                        <p class="text-muted">Assessments</p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <h3 class="text-info">{{ company.created_at.strftime('%Y-%m-%d') }}</h3>
+                        <p class="text-muted">Created</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

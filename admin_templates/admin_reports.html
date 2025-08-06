@@ -1,0 +1,311 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Reports & Analytics - Modern360 Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2 mb-0">
+        <i class="fas fa-chart-bar me-2 text-primary"></i>Reports & Analytics
+    </h1>
+    <div class="btn-group">
+        <button type="button" class="btn btn-outline-primary" onclick="exportData('csv')">
+            <i class="fas fa-download me-1"></i>Export CSV
+        </button>
+        <button type="button" class="btn btn-outline-primary" onclick="exportData('pdf')">
+            <i class="fas fa-file-pdf me-1"></i>Export PDF
+        </button>
+    </div>
+</div>
+
+<!-- Assessment Completion Rates -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-chart-pie me-2"></i>Assessment Completion Rates
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if assessments_with_stats %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Assessment</th>
+                        <th>Creator</th>
+                        <th>Type</th>
+                        <th>Invitations Sent</th>
+                        <th>Responses Received</th>
+                        <th>Completion Rate</th>
+                        <th>Progress</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in assessments_with_stats %}
+                    <tr>
+                        <td>
+                            <div>
+                                <strong>{{ item.assessment.title }}</strong>
+                                <br><small class="text-muted">Created: {{ item.assessment.created_at.strftime('%m/%d/%Y') }}</small>
+                            </div>
+                        </td>
+                        <td>{{ item.assessment.creator.name }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'info' if item.assessment.is_self_assessment else 'warning' }}">
+                                {{ 'Self-Assessment' if item.assessment.is_self_assessment else '360 Assessment' }}
+                            </span>
+                        </td>
+                        <td>{{ item.total_invitations }}</td>
+                        <td>{{ item.completed_responses }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if item.completion_rate >= 80 else 'warning' if item.completion_rate >= 50 else 'danger' }}">
+                                {{ item.completion_rate }}%
+                            </span>
+                        </td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-{{ 'success' if item.completion_rate >= 80 else 'warning' if item.completion_rate >= 50 else 'danger' }}" 
+                                     role="progressbar" style="width: {{ item.completion_rate }}%">
+                                    {{ item.completion_rate }}%
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">No assessment data available</h6>
+            <p class="text-muted">Create assessments and send invitations to see completion rates.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- User Activity Statistics -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-users me-2"></i>User Activity Statistics
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if user_stats %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Assessments Created</th>
+                        <th>Responses Submitted</th>
+                        <th>Invitations Sent</th>
+                        <th>Activity Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in user_stats %}
+                    {% set activity_score = (item.assessments_created * 3) + (item.responses_submitted * 2) + item.invitations_sent %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary rounded-circle p-1 me-2" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-user text-white small"></i>
+                                </div>
+                                <div>
+                                    <strong>{{ item.user.name }}</strong>
+                                    <br><small class="text-muted">{{ item.user.email }}</small>
+                                    {% if item.user.company %}
+                                    <br><small class="text-primary">
+                                        <i class="fas fa-building" style="font-size: 10px;"></i> {{ item.user.company }}
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'danger' if item.user.role == 'admin' else 'warning' if item.user.role == 'manager' else 'info' }}">
+                                {{ item.user.role.title() }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">{{ item.assessments_created }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-success">{{ item.responses_submitted }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ item.invitations_sent }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if activity_score >= 10 else 'warning' if activity_score >= 5 else 'secondary' }}">
+                                {{ activity_score }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">No user activity data available</h6>
+            <p class="text-muted">Add users and encourage them to participate in assessments.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="row">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-percentage fa-2x text-primary mb-2"></i>
+                <h4 class="text-primary">
+                    {% if assessments_with_stats %}
+                        {{ "%.1f"|format(assessments_with_stats|map(attribute='completion_rate')|list|sum / assessments_with_stats|length) }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </h4>
+                <p class="text-muted mb-0">Average Completion Rate</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                <h4 class="text-warning">
+                    {{ assessments_with_stats|selectattr('completion_rate', '<', 100)|list|length }}
+                </h4>
+                <p class="text-muted mb-0">Assessments In Progress</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-user-check fa-2x text-success mb-2"></i>
+                <h4 class="text-success">
+                    {{ user_stats|selectattr('responses_submitted', '>', 0)|list|length }}
+                </h4>
+                <p class="text-muted mb-0">Active Participants</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-trophy fa-2x text-info mb-2"></i>
+                <h4 class="text-info">
+                    {% if user_stats %}
+                        {{ user_stats|map(attribute='assessments_created')|list|sum }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </h4>
+                <p class="text-muted mb-0">Total Assessments</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>Assessment Creation Trend
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="assessmentTrendChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-doughnut me-2"></i>Assessment Types Distribution
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="assessmentTypesChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Assessment Types Chart
+const assessmentTypesCtx = document.getElementById('assessmentTypesChart').getContext('2d');
+const selfAssessments = {{ assessments_with_stats|selectattr('assessment.is_self_assessment')|list|length }};
+const regularAssessments = {{ assessments_with_stats|length }} - selfAssessments;
+
+new Chart(assessmentTypesCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['360 Assessments', 'Self Assessments'],
+        datasets: [{
+            data: [regularAssessments, selfAssessments],
+            backgroundColor: ['#1976d2', '#17a2b8']
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Assessment Trend Chart (placeholder data)
+const assessmentTrendCtx = document.getElementById('assessmentTrendChart').getContext('2d');
+new Chart(assessmentTrendCtx, {
+    type: 'line',
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Assessments Created',
+            data: [2, 5, 3, 8, 6, 4],
+            borderColor: '#1976d2',
+            backgroundColor: 'rgba(25, 118, 210, 0.1)',
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+function exportData(format) {
+    // Placeholder for export functionality
+    alert(`Export to ${format.toUpperCase()} functionality will be implemented here.`);
+    
+    // In a real implementation, you would:
+    // 1. Collect all the data
+    // 2. Format it according to the requested format
+    // 3. Create a downloadable file
+    // 4. Trigger the download
+}
+</script>
+{% endblock %}

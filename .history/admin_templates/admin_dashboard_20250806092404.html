@@ -1,0 +1,262 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Admin Dashboard - Modern360{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2 mb-0">
+        <i class="fas fa-tachometer-alt me-2 text-primary"></i>Admin Dashboard
+    </h1>
+    <span class="badge bg-success fs-6">
+        <i class="fas fa-circle me-1"></i>System Online
+    </span>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-2">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-building fa-2x text-primary mb-2"></i>
+                <h3 class="mb-1">{{ total_companies }}</h3>
+                <p class="text-muted mb-0">Companies</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-2x text-info mb-2"></i>
+                <h3 class="mb-1">{{ total_users }}</h3>
+                <p class="text-muted mb-0">Total Users</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-clipboard-list fa-2x text-success mb-2"></i>
+                <h3 class="mb-1">{{ total_assessments }}</h3>
+                <p class="text-muted mb-0">Assessments</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-play-circle fa-2x text-warning mb-2"></i>
+                <h3 class="mb-1">{{ active_assessments }}</h3>
+                <p class="text-muted mb-0">Active</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                <h3 class="mb-1">{{ total_responses }}</h3>
+                <p class="text-muted mb-0">Responses</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-envelope fa-2x text-warning mb-2"></i>
+                <h3 class="mb-1">{{ pending_invitations }}</h3>
+                <p class="text-muted mb-0">Pending</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <a href="{{ url_for('admin_create_company') }}" class="btn btn-primary btn-sm w-100 mb-2">
+                    <i class="fas fa-plus me-1"></i>New Company
+                </a>
+                <a href="{{ url_for('admin_create_assessment') }}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                    <i class="fas fa-clipboard-list me-1"></i>New Assessment
+                </a>
+                <a href="{{ url_for('admin_create_user') }}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="fas fa-user-plus me-1"></i>Add User
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <!-- Recent Companies -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-building me-2"></i>Recent Companies
+                </h5>
+                <a href="{{ url_for('admin_companies') }}" class="btn btn-light btn-sm">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_companies %}
+                    {% for company in recent_companies %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary rounded-circle p-2 me-3">
+                            <i class="fas fa-building text-white"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0">{{ company.name }}</h6>
+                            <small class="text-muted">{{ company.users|length }} users, {{ company.assessments|length }} assessments</small>
+                        </div>
+                        <span class="badge bg-{{ 'success' if company.is_active else 'secondary' }}">
+                            {{ 'Active' if company.is_active else 'Inactive' }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center">No companies found</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Users -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>Recent Users
+                </h5>
+                <a href="{{ url_for('admin_users') }}" class="btn btn-light btn-sm">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_users %}
+                    {% for user in recent_users %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-info rounded-circle p-2 me-3">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0">{{ user.name }}</h6>
+                            <small class="text-muted">{{ user.email }}</small>
+                            {% if user.company %}
+                            <br><small class="text-primary">
+                                <i class="fas fa-building" style="font-size: 10px;"></i> {{ user.company }}
+                            </small>
+                            {% endif %}
+                        </div>
+                        <span class="badge bg-{{ 'success' if user.is_active else 'secondary' }}">
+                            {{ user.role.title() }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center">No users found</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+
+    <!-- Recent Assessments -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-clipboard-list me-2"></i>Recent Assessments
+                </h5>
+                <a href="{{ url_for('admin_assessments') }}" class="btn btn-light btn-sm">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_assessments %}
+                    {% for assessment in recent_assessments %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-success rounded-circle p-2 me-3">
+                            <i class="fas fa-clipboard-list text-white"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0">{{ assessment.title[:30] }}{{ '...' if assessment.title|length > 30 else '' }}</h6>
+                            <small class="text-muted">{{ assessment.created_at.strftime('%m/%d/%Y') }}</small>
+                        </div>
+                        <span class="badge bg-{{ 'success' if assessment.is_active else 'secondary' }}">
+                            {{ 'Active' if assessment.is_active else 'Inactive' }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center">No assessments found</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Responses -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Recent Activity
+                </h5>
+                <a href="{{ url_for('admin_reports') }}" class="btn btn-light btn-sm">View Reports</a>
+            </div>
+            <div class="card-body">
+                {% if recent_responses %}
+                    {% for response in recent_responses %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-info rounded-circle p-2 me-3">
+                            <i class="fas fa-check text-white"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0">Assessment Response</h6>
+                            <small class="text-muted">{{ response.submitted_at.strftime('%m/%d/%Y %H:%M') }}</small>
+                        </div>
+                        <span class="badge bg-info">
+                            Completed
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center">No responses yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightning-bolt me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="{{ url_for('admin_create_assessment') }}" class="btn btn-primary w-100 mb-2">
+                            <i class="fas fa-plus me-2"></i>Create Assessment
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('admin_send_invitations') }}" class="btn btn-success w-100 mb-2">
+                            <i class="fas fa-envelope me-2"></i>Send Invitations
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('admin_create_user') }}" class="btn btn-info w-100 mb-2">
+                            <i class="fas fa-user-plus me-2"></i>Add User
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('admin_notifications') }}" class="btn btn-warning w-100 mb-2">
+                            <i class="fas fa-bell me-2"></i>Notifications
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

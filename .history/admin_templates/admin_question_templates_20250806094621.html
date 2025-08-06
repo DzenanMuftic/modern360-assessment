@@ -1,0 +1,85 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Question Templates - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2><i class="fas fa-clipboard-list me-2"></i>Question Templates</h2>
+    <p class="text-muted">Predefined question sets for assessments</p>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-flag me-2"></i>English Questions</h5>
+                <small class="text-muted">{{ english_groups|length }} categories, {{ english_groups.values()|map('length')|sum }} questions</small>
+            </div>
+            <div class="card-body">
+                {% for group, questions in english_groups.items() %}
+                <div class="mb-4">
+                    <h6 class="text-primary border-bottom pb-2">
+                        <i class="fas fa-folder me-1"></i>{{ group }}
+                        <span class="badge bg-primary ms-2">{{ questions|length }}</span>
+                    </h6>
+                    <div class="list-group list-group-flush">
+                        {% for question in questions %}
+                        <div class="list-group-item border-0 px-0 py-2">
+                            <small class="text-muted">#{{ question.order }}</small>
+                            <span class="ms-2">{{ question.question_text }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-flag me-2"></i>Bosanski Questions</h5>
+                <small class="text-muted">{{ bosnian_groups|length }} kategorija, {{ bosnian_groups.values()|map('length')|sum }} pitanja</small>
+            </div>
+            <div class="card-body">
+                {% for group, questions in bosnian_groups.items() %}
+                <div class="mb-4">
+                    <h6 class="text-success border-bottom pb-2">
+                        <i class="fas fa-folder me-1"></i>{{ group }}
+                        <span class="badge bg-success ms-2">{{ questions|length }}</span>
+                    </h6>
+                    <div class="list-group list-group-flush">
+                        {% for question in questions %}
+                        <div class="list-group-item border-0 px-0 py-2">
+                            <small class="text-muted">#{{ question.order }}</small>
+                            <span class="ms-2">{{ question.question_text }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{{ url_for('admin_assessments') }}" class="btn btn-secondary me-2">
+        <i class="fas fa-arrow-left me-2"></i>Back to Assessments
+    </a>
+    <a href="{{ url_for('admin_create_assessment') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Create Assessment with Template
+    </a>
+</div>
+
+<div class="alert alert-info mt-4">
+    <h6><i class="fas fa-info-circle me-2"></i>How to Use Templates</h6>
+    <ul class="mb-0">
+        <li>When creating a new assessment, check "Use Predefined Question Template"</li>
+        <li>Select your preferred language (English or Bosanski)</li>
+        <li>All questions from the template will be automatically added</li>
+        <li>You can still add custom questions if needed</li>
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Assessment Participants - {{ assessment.title }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2><i class="fas fa-users me-2"></i>Assessment Participants</h2>
+    <p class="text-muted">Assessment: <strong>{{ assessment.title }}</strong> | Company: <strong>{{ assessment.company_ref.name }}</strong></p>
+</div>
+
+<!-- Add Participant Form -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5><i class="fas fa-user-plus me-2"></i>Add Participant</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('admin_add_participant', assessment_id=assessment.id) }}">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="assessee_id" class="form-label">Assessee *</label>
+                    <select class="form-select" id="assessee_id" name="assessee_id" required>
+                        <option value="">Select Assessee</option>
+                        {% for user in assessees %}
+                        <option value="{{ user.id }}">{{ user.name }} ({{ user.email }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="assessor_ids" class="form-label">Assessors</label>
+                    <select class="form-select" id="assessor_ids" name="assessor_ids" multiple>
+                        {% for user in assessors %}
+                        <option value="{{ user.id }}">{{ user.name }} ({{ user.email }})</option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple assessors</small>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-plus me-2"></i>Add
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Current Participants -->
+{% if participants %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5><i class="fas fa-list me-2"></i>Current Participants</h5>
+        <form method="POST" action="{{ url_for('admin_send_assessment_invitations', assessment_id=assessment.id) }}" style="display: inline;">
+            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Send invitations to all participants?')">
+                <i class="fas fa-envelope me-2"></i>Send All Invitations
+            </button>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Assessee</th>
+                        <th>Assessor</th>
+                        <th>Type</th>
+                        <th>Self-Assessment</th>
+                        <th>Assessor Assessment</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for participant in participants %}
+                    <tr>
+                        <td>
+                            <strong>{{ participant.assessee.name }}</strong><br>
+                            <small class="text-muted">{{ participant.assessee.email }}</small>
+                        </td>
+                        <td>
+                            {% if participant.assessor %}
+                                <strong>{{ participant.assessor.name }}</strong><br>
+                                <small class="text-muted">{{ participant.assessor.email }}</small>
+                            {% else %}
+                                <span class="text-muted">Self-Assessment</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if participant.assessor %}
+                                <span class="badge bg-info">Assessor Evaluation</span>
+                            {% else %}
+                                <span class="badge bg-success">Self-Assessment</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if not participant.assessor %}
+                                {% if participant.self_assessment_completed %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check me-1"></i>Completed
+                                    </span>
+                                    <br><small class="text-muted">{{ participant.self_assessment_date.strftime('%Y-%m-%d %H:%M') if participant.self_assessment_date }}</small>
+                                {% else %}
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-clock me-1"></i>Pending
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if participant.assessor %}
+                                {% if participant.assessor_assessment_completed %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check me-1"></i>Completed
+                                    </span>
+                                    <br><small class="text-muted">{{ participant.assessor_assessment_date.strftime('%Y-%m-%d %H:%M') if participant.assessor_assessment_date }}</small>
+                                {% else %}
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-clock me-1"></i>Pending
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ participant.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+    <h4>No Participants Yet</h4>
+    <p class="text-muted">Add assessees and assessors to this assessment using the form above.</p>
+</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{{ url_for('admin_assessments') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Assessments
+    </a>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Make the assessor select more user-friendly
+document.addEventListener('DOMContentLoaded', function() {
+    const assessorSelect = document.getElementById('assessor_ids');
+    if (assessorSelect) {
+        assessorSelect.setAttribute('size', '4');
+    }
+});
+</script>
+{% endblock %}

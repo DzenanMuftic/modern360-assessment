@@ -1,0 +1,184 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Send Invitations - Modern360 Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2 mb-0">
+        <i class="fas fa-paper-plane me-2 text-primary"></i>Send Invitations
+    </h1>
+    <a href="{{ url_for('admin_invitations') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Invitations
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-envelope me-2"></i>Invitation Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="assessment_id" class="form-label">
+                            <i class="fas fa-clipboard-list me-1"></i>Select Assessment *
+                        </label>
+                        <select class="form-select" id="assessment_id" name="assessment_id" required>
+                            <option value="">Choose an assessment...</option>
+                            {% for assessment in assessments %}
+                            <option value="{{ assessment.id }}">
+                                {{ assessment.title }} 
+                                ({{ 'Self-Assessment' if assessment.is_self_assessment else '360 Assessment' }})
+                                {% if assessment.deadline %} - Deadline: {{ assessment.deadline.strftime('%m/%d/%Y') }}{% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="sender_id" class="form-label">
+                            <i class="fas fa-user me-1"></i>Sender
+                        </label>
+                        <select class="form-select" id="sender_id" name="sender_id">
+                            <option value="">System (default)</option>
+                            {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.name }} ({{ user.email }})</option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">
+                            Select who should appear as the sender of the invitation emails
+                        </small>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="emails" class="form-label">
+                            <i class="fas fa-envelope me-1"></i>Email Addresses *
+                        </label>
+                        <textarea class="form-control" id="emails" name="emails" rows="8" required 
+                                  placeholder="Enter email addresses, one per line or separated by commas:&#10;&#10;john.doe@example.com&#10;jane.smith@example.com&#10;user@company.com"></textarea>
+                        <small class="form-text text-muted">
+                            Enter email addresses separated by new lines or commas. Duplicate and invalid emails will be filtered out.
+                        </small>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('admin_invitations') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Send Invitations
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Email Template Preview
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="border rounded p-3 bg-light">
+                    <div class="mb-2">
+                        <strong>Subject:</strong> Assessment Invitation - [Assessment Title]
+                    </div>
+                    <div class="mb-2">
+                        <strong>From:</strong> [Sender Name] or Modern360 System
+                    </div>
+                    <hr>
+                    <div class="small">
+                        <p>You have been invited to complete an assessment.</p>
+                        <p><strong>Assessment:</strong> [Assessment Title]<br>
+                        <strong>Description:</strong> [Assessment Description]</p>
+                        <p>Please click the link below to complete the assessment:</p>
+                        <p><a href="#" class="btn btn-primary btn-sm">Start Assessment</a></p>
+                        <p class="text-muted">If the button doesn't work, copy and paste this link into your browser:<br>
+                        <code>[Assessment URL]</code></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>Tips
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled small">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-1"></i>
+                        Double-check email addresses before sending
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-1"></i>
+                        Make sure the assessment deadline is appropriate
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-1"></i>
+                        You can send reminders from the invitations page
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-1"></i>
+                        Recipients will receive a link to complete the assessment
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-1"></i>
+                        No account creation required for participants
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Quick Stats
+                </h6>
+            </div>
+            <div class="card-body text-center">
+                <div class="row">
+                    <div class="col-6">
+                        <h5 class="text-primary">{{ assessments|length }}</h5>
+                        <small class="text-muted">Active Assessments</small>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="text-success">{{ users|length }}</h5>
+                        <small class="text-muted">Available Users</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-format email addresses
+document.getElementById('emails').addEventListener('blur', function() {
+    let emails = this.value;
+    // Replace commas with newlines and clean up
+    emails = emails.replace(/,/g, '\n');
+    emails = emails.split('\n').map(email => email.trim()).filter(email => email).join('\n');
+    this.value = emails;
+});
+
+// Show assessment details when selected
+document.getElementById('assessment_id').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    if (selectedOption.value) {
+        // You could add AJAX call here to load assessment details
+        console.log('Selected assessment:', selectedOption.text);
+    }
+});
+</script>
+{% endblock %}
