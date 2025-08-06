@@ -3,6 +3,14 @@
 {% block title %}Create Assessment - Modern360 Admin{% endblock %}
 
 {% block content %}
+<style>
+.btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+</style>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h2 mb-0">
         <i class="fas fa-plus-circle me-2 text-primary"></i>Create New Assessment
@@ -14,12 +22,12 @@
 
 <form method="POST" id="assessmentForm">
     <div class="row">
-        <!-- Assessment Details -->
-        <div class="col-md-8">
+        <div class="col-12">
+            <!-- Assessment Name -->
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">
-                        <i class="fas fa-info-circle me-2"></i>Assessment Details
+                        <i class="fas fa-info-circle me-2"></i>Assessment Information
                     </h5>
                 </div>
                 <div class="card-body">
@@ -38,19 +46,167 @@
                         <textarea class="form-control" id="description" name="description" rows="3" 
                                   placeholder="Enter assessment description (optional)"></textarea>
                     </div>
-                    
+                </div>
+            </div>
+
+            <!-- Company Selection -->
+            <div class="card mt-4" id="company-section" style="display: none;">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-building me-2"></i>Company Selection
+                    </h5>
+                </div>
+                <div class="card-body">
                     <div class="mb-3">
                         <label for="company_id" class="form-label">
                             <i class="fas fa-building me-1"></i>Company *
                         </label>
-                        <select class="form-select" id="company_id" name="company_id" required>
-                            <option value="">Select Company</option>
-                            {% for company in companies %}
-                            <option value="{{ company.id }}">{{ company.name }}</option>
-                            {% endfor %}
-                        </select>
+                        <div class="input-group">
+                            <select class="form-select" id="company_id" name="company_id" required>
+                                <option value="">Select Company</option>
+                                {% for company in companies %}
+                                <option value="{{ company.id }}">{{ company.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="button" class="btn btn-outline-primary" onclick="openAddCompanyModal()">
+                                <i class="fas fa-plus me-1"></i>Add New Company
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Participants Section -->
+            <div class="card mt-4" id="participants-section" style="display: none;">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Assessment Participants
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Assessees Section -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <label class="form-label mb-0">
+                                <i class="fas fa-user-check me-1"></i>Assessee * <small class="text-muted">(Only one can be selected)</small>
+                            </label>
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="openAddAssesseeModal()">
+                                <i class="fas fa-plus me-1"></i>Add Assessee
+                            </button>
+                        </div>
+                        <div id="selected-assessees" class="border rounded p-3" style="min-height: 100px;">
+                            <div class="text-muted text-center" id="no-assessees-message">
+                                <i class="fas fa-user-plus fa-2x mb-2"></i>
+                                <p class="mb-0">No assessee selected. Click "Add Assessee" to add the person who will be assessed.</p>
+                            </div>
+                        </div>
+                        <input type="hidden" id="assessees-input" name="assessees" value="">
+                    </div>
+
+                    <!-- Assessors Section -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <label class="form-label mb-0">
+                                <i class="fas fa-user-tie me-1"></i>Assessors * <small class="text-muted">(with their roles)</small>
+                            </label>
+                            <button type="button" class="btn btn-outline-info btn-sm" onclick="openAddAssessorModal()">
+                                <i class="fas fa-plus me-1"></i>Add Assessor
+                            </button>
+                        </div>
+                        <div id="selected-assessors" class="border rounded p-3" style="min-height: 100px;">
+                            <div class="text-muted text-center" id="no-assessors-message">
+                                <i class="fas fa-user-plus fa-2x mb-2"></i>
+                                <p class="mb-0">No assessors selected. Click "Add Assessor" to add people who will assess the assessee.</p>
+                            </div>
+                        </div>
+                        <input type="hidden" id="assessors-input" name="assessors" value="">
+                    </div>
+
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> The selected assessee will receive a self-assessment. 
+                        Selected assessors will assess the assessee (360-degree feedback).
                     </div>
                     
+                    <!-- Participants Summary -->
+                    <div class="mt-4" id="participants-summary" style="display: none;">
+                        <h6><i class="fas fa-list me-2"></i>Participant Summary</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Assessee</th>
+                                        <th>Assessors</th>
+                                        <th>Assessment Type</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="participants-summary-body">
+                                    <!-- Will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Send Invitations Option -->
+                        <div class="mt-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="send_invitations" name="send_invitations" checked>
+                                        <label class="form-check-label" for="send_invitations">
+                                            <i class="fas fa-envelope me-1"></i>Send email invitations immediately
+                                        </label>
+                                        <small class="form-text text-muted d-block">
+                                            Participants will receive email invitations with assessment links
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="allow_self_registration" name="allow_self_registration">
+                                        <label class="form-check-label" for="allow_self_registration">
+                                            <i class="fas fa-user-plus me-1"></i>Allow participant self-registration
+                                        </label>
+                                        <small class="form-text text-muted d-block">
+                                            Participants can register themselves using a shared link
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Participant Count Summary -->
+                            <div class="alert alert-light mt-3">
+                                <div class="row text-center">
+                                    <div class="col-md-3">
+                                        <i class="fas fa-user-check fa-2x text-success mb-2"></i>
+                                        <div><strong id="assessee-count">0</strong></div>
+                                        <small class="text-muted">Assessee</small>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <i class="fas fa-user-tie fa-2x text-info mb-2"></i>
+                                        <div><strong id="assessor-count">0</strong></div>
+                                        <small class="text-muted">Assessors</small>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <i class="fas fa-clipboard-list fa-2x text-warning mb-2"></i>
+                                        <div><strong id="total-assessments">0</strong></div>
+                                        <small class="text-muted">Total Assessments</small>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <i class="fas fa-envelope fa-2x text-primary mb-2"></i>
+                                        <div><strong id="invitation-count">0</strong></div>
+                                        <small class="text-muted">Invitations to Send</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assessment Details Section -->
+            <div class="card mt-4" id="details-section" style="display: none;">
+                <div class="card-body">
                     <div class="row">
                         <div class="col-md-4">
                             <div class="mb-3">
@@ -145,56 +301,820 @@
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Sidebar -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0">
-                        <i class="fas fa-cog me-2"></i>Assessment Settings
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <strong>Question Types Available:</strong>
-                        <ul class="list-unstyled mt-2">
-                            <li><i class="fas fa-star text-warning me-1"></i> Rating Scale (1-5)</li>
-                            <li><i class="fas fa-align-left text-info me-1"></i> Text Response</li>
-                            <li><i class="fas fa-list text-success me-1"></i> Multiple Choice</li>
-                        </ul>
+
+            <!-- Create Assessment Button -->
+            <div class="card mt-4" id="create-section" style="display: none;">
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-center gap-3">
+                        <button type="button" class="btn btn-outline-info btn-lg px-4" onclick="previewAssessment()">
+                            <i class="fas fa-eye me-2"></i>Preview Assessment
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-save me-2"></i>Create Assessment
+                        </button>
+                        <a href="{{ url_for('admin_assessments') }}" class="btn btn-secondary btn-lg px-4">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
                     </div>
                     
-                    <div class="mb-3">
-                        <strong>Tips:</strong>
-                        <ul class="list-unstyled mt-2 small text-muted">
-                            <li>• Keep questions clear and specific</li>
-                            <li>• Use rating scales for quantitative feedback</li>
-                            <li>• Use text responses for detailed feedback</li>
-                            <li>• Set realistic deadlines</li>
-                        </ul>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Review all settings and participants before creating the assessment
+                        </small>
                     </div>
-                </div>
-            </div>
-            
-            <div class="card mt-3">
-                <div class="card-body text-center">
-                    <button type="submit" class="btn btn-primary w-100 mb-2">
-                        <i class="fas fa-save me-2"></i>Create Assessment
-                    </button>
-                    <a href="{{ url_for('admin_assessments') }}" class="btn btn-secondary w-100">
-                        <i class="fas fa-times me-2"></i>Cancel
-                    </a>
                 </div>
             </div>
         </div>
     </div>
 </form>
+
+<!-- Add Company Modal -->
+<div class="modal fade" id="addCompanyModal" tabindex="-1" aria-labelledby="addCompanyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCompanyModalLabel">
+                    <i class="fas fa-building me-2"></i>Add New Company
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addCompanyForm">
+                    <div class="mb-3">
+                        <label for="companyName" class="form-label">Company Name *</label>
+                        <input type="text" class="form-control" id="companyName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="companyDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="companyDescription" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="addCompany()">
+                    <i class="fas fa-plus me-1"></i>Add Company
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Assessee Modal -->
+<div class="modal fade" id="addAssesseeModal" tabindex="-1" aria-labelledby="addAssesseeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAssesseeModalLabel">
+                    <i class="fas fa-user-check me-2"></i>Add Assessee
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info mb-3">
+                    <i class="fas fa-building me-2"></i>
+                    <strong>Company:</strong> <span id="assesseeModalCompanyName">Please select a company first</span>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Select Existing from Company</h6>
+                        <select class="form-select" id="existingAssesseeSelect" size="8">
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                        <button type="button" class="btn btn-success w-100 mt-2" onclick="addExistingAssessee()">
+                            <i class="fas fa-plus me-1"></i>Add Selected
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Add New Assessee</h6>
+                        <form id="addAssesseeForm">
+                            <div class="mb-3">
+                                <label for="assesseeName" class="form-label">Name *</label>
+                                <input type="text" class="form-control" id="assesseeName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="assesseeEmail" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="assesseeEmail" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="assesseeRole" class="form-label">Role</label>
+                                <select class="form-select" id="assesseeRole" disabled>
+                                    <option value="assessee" selected>Assessee</option>
+                                </select>
+                                <small class="form-text text-muted">Role automatically set to Assessee for this assessment</small>
+                            </div>
+                            <button type="button" class="btn btn-primary w-100" onclick="addNewAssessee()">
+                                <i class="fas fa-user-plus me-1"></i>Create & Add Assessee
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Assessor Modal -->
+<div class="modal fade" id="addAssessorModal" tabindex="-1" aria-labelledby="addAssessorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAssessorModalLabel">
+                    <i class="fas fa-user-tie me-2"></i>Add Assessor
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info mb-3">
+                    <i class="fas fa-building me-2"></i>
+                    <strong>Company:</strong> <span id="assessorModalCompanyName">Please select a company first</span>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Select Existing from Company</h6>
+                        <select class="form-select" id="existingAssessorSelect" size="6">
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                        <div class="mb-2 mt-2">
+                            <label for="existingAssessorRelationship" class="form-label">Assessor Relationship *</label>
+                            <select class="form-select" id="existingAssessorRelationship" required>
+                                <option value="">Select Relationship</option>
+                                <option value="Manager">Manager / Supervisor</option>
+                                <option value="Peer">Peers / Colleagues</option>
+                                <option value="Direct Report">Direct Reports / Subordinates</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-success w-100" onclick="addExistingAssessor()">
+                            <i class="fas fa-plus me-1"></i>Add Selected
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Add New Assessor</h6>
+                        <form id="addAssessorForm">
+                            <div class="mb-3">
+                                <label for="assessorName" class="form-label">Name *</label>
+                                <input type="text" class="form-control" id="assessorName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="assessorEmail" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="assessorEmail" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="assessorRole" class="form-label">Role</label>
+                                <select class="form-select" id="assessorRole">
+                                    <option value="user">User</option>
+                                    <option value="assessor" selected>Assessor</option>
+                                    <option value="manager">Manager</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="assessorRelationship" class="form-label">Assessor Relationship *</label>
+                                <select class="form-select" id="assessorRelationship" required>
+                                    <option value="">Select Relationship</option>
+                                    <option value="Manager">Manager / Supervisor</option>
+                                    <option value="Peer">Peers / Colleagues</option>
+                                    <option value="Direct Report">Direct Reports / Subordinates</option>
+                                </select>
+                                <small class="form-text text-muted">
+                                    <strong>Manager:</strong> Direct supervisor providing performance evaluation<br>
+                                    <strong>Peer:</strong> Co-worker at same level evaluating collaboration<br>
+                                    <strong>Direct Report:</strong> Employee evaluating leadership style
+                                </small>
+                            </div>
+                            <button type="button" class="btn btn-primary w-100" onclick="addNewAssessor()">
+                                <i class="fas fa-user-plus me-1"></i>Create & Add Assessor
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assessment Preview Modal -->
+<div class="modal fade" id="assessmentPreviewModal" tabindex="-1" aria-labelledby="assessmentPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assessmentPreviewModalLabel">
+                    <i class="fas fa-eye me-2"></i>Assessment Preview
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="preview-content">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close Preview</button>
+                <button type="button" class="btn btn-primary" onclick="bootstrap.Modal.getInstance(document.getElementById('assessmentPreviewModal')).hide(); document.getElementById('assessmentForm').submit();">
+                    <i class="fas fa-save me-2"></i>Looks Good - Create Assessment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
 let questionCounter = 0;
+let selectedAssessees = new Map();
+let selectedAssessors = new Map();
+
+// Assessment title handler to show company section
+document.getElementById('title').addEventListener('input', function() {
+    const title = this.value.trim();
+    if (title.length > 0) {
+        document.getElementById('company-section').style.display = 'block';
+    } else {
+        document.getElementById('company-section').style.display = 'none';
+        document.getElementById('participants-section').style.display = 'none';
+        hideSubsequentSections();
+    }
+});
+
+// Company selection handler
+document.getElementById('company_id').addEventListener('change', function() {
+    const companyId = this.value;
+    const companyName = this.options[this.selectedIndex].text;
+    
+    if (companyId) {
+        document.getElementById('participants-section').style.display = 'block';
+        loadCompanyUsers(companyId);
+        
+        // Update company names in modals
+        document.getElementById('assesseeModalCompanyName').textContent = companyName;
+        document.getElementById('assessorModalCompanyName').textContent = companyName;
+    } else {
+        document.getElementById('participants-section').style.display = 'none';
+        hideSubsequentSections();
+        
+        // Reset company names in modals
+        document.getElementById('assesseeModalCompanyName').textContent = 'Please select a company first';
+        document.getElementById('assessorModalCompanyName').textContent = 'Please select a company first';
+    }
+});
+
+function loadCompanyUsers(companyId) {
+    fetch(`/api/company/${companyId}/users`)
+        .then(response => response.json())
+        .then(data => {
+            updateUserSelects(data.users);
+        })
+        .catch(error => {
+            console.error('Error fetching users:', error);
+        });
+}
+
+function updateUserSelects(users) {
+    const assesseeSelect = document.getElementById('existingAssesseeSelect');
+    const assessorSelect = document.getElementById('existingAssessorSelect');
+    
+    assesseeSelect.innerHTML = '';
+    assessorSelect.innerHTML = '';
+    
+    const assesseeRoles = ['user', 'assessee', 'manager'];
+    const assessorRoles = ['user', 'assessor', 'manager', 'admin'];
+    
+    users.filter(user => assesseeRoles.includes(user.role) && user.is_active)
+        .forEach(user => {
+            if (!selectedAssessees.has(user.id)) {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = `${user.name} (${user.email})`;
+                option.dataset.name = user.name;
+                option.dataset.email = user.email;
+                assesseeSelect.appendChild(option);
+            }
+        });
+    
+    users.filter(user => assessorRoles.includes(user.role) && user.is_active)
+        .forEach(user => {
+            if (!selectedAssessors.has(user.id)) {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = `${user.name} (${user.email})`;
+                option.dataset.name = user.name;
+                option.dataset.email = user.email;
+                assessorSelect.appendChild(option);
+            }
+        });
+}
+
+// Modal functions
+function openAddCompanyModal() {
+    new bootstrap.Modal(document.getElementById('addCompanyModal')).show();
+}
+
+function openAddAssesseeModal() {
+    // Check if an assessee is already selected (only one allowed)
+    if (selectedAssessees.size > 0) {
+        alert('Only one assessee can be selected per assessment. Please remove the current assessee first.');
+        return;
+    }
+    
+    const companySelect = document.getElementById('company_id');
+    if (!companySelect.value) {
+        alert('Please select a company first!');
+        return;
+    }
+    new bootstrap.Modal(document.getElementById('addAssesseeModal')).show();
+}
+
+function openAddAssessorModal() {
+    const companySelect = document.getElementById('company_id');
+    if (!companySelect.value) {
+        alert('Please select a company first!');
+        return;
+    }
+    new bootstrap.Modal(document.getElementById('addAssessorModal')).show();
+}
+
+function addCompany() {
+    const name = document.getElementById('companyName').value.trim();
+    const description = document.getElementById('companyDescription').value.trim();
+    
+    if (!name) {
+        alert('Company name is required!');
+        return;
+    }
+    
+    fetch('/api/companies', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, description })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Add to select and select it
+            const select = document.getElementById('company_id');
+            const option = document.createElement('option');
+            option.value = data.company.id;
+            option.textContent = data.company.name;
+            option.selected = true;
+            select.appendChild(option);
+            
+            // Update company names in modals
+            document.getElementById('assesseeModalCompanyName').textContent = data.company.name;
+            document.getElementById('assessorModalCompanyName').textContent = data.company.name;
+            
+            // Trigger change event
+            select.dispatchEvent(new Event('change'));
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('addCompanyModal')).hide();
+            
+            // Clear form
+            document.getElementById('addCompanyForm').reset();
+        } else {
+            alert(data.message || 'Error creating company');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error creating company');
+    });
+}
+
+function addExistingAssessee() {
+    // Check if an assessee is already selected (only one allowed)
+    if (selectedAssessees.size > 0) {
+        alert('Only one assessee can be selected. Please remove the current assessee first.');
+        return;
+    }
+    
+    const select = document.getElementById('existingAssesseeSelect');
+    const selected = select.options[select.selectedIndex];
+    
+    if (selected) {
+        const userId = selected.value;
+        const userName = selected.dataset.name;
+        const userEmail = selected.dataset.email;
+        
+        selectedAssessees.set(parseInt(userId), { name: userName, email: userEmail });
+        updateAssesseesDisplay();
+        updateUserSelects(getCurrentUsers());
+        checkFormProgress();
+        
+        bootstrap.Modal.getInstance(document.getElementById('addAssesseeModal')).hide();
+    }
+}
+
+function addNewAssessee() {
+    // Check if an assessee is already selected (only one allowed)
+    if (selectedAssessees.size > 0) {
+        alert('Only one assessee can be selected. Please remove the current assessee first.');
+        return;
+    }
+    
+    const name = document.getElementById('assesseeName').value.trim();
+    const email = document.getElementById('assesseeEmail').value.trim();
+    const role = document.getElementById('assesseeRole').value;
+    const companyId = document.getElementById('company_id').value;
+    
+    console.log('DEBUG: Form values:', { name, email, role, companyId });
+    
+    if (!name || !email || !companyId) {
+        alert('Name, email and company are required!');
+        return;
+    }
+    
+    const requestData = { name, email, role, company_id: parseInt(companyId) };
+    console.log('DEBUG: Sending request:', requestData);
+    
+    fetch('/api/users', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => {
+        console.log('DEBUG: Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('DEBUG: Response data:', data);
+        if (data.success) {
+            selectedAssessees.set(data.user.id, { name: data.user.name, email: data.user.email });
+            updateAssesseesDisplay();
+            checkFormProgress();
+            
+            bootstrap.Modal.getInstance(document.getElementById('addAssesseeModal')).hide();
+            document.getElementById('addAssesseeForm').reset();
+        } else {
+            alert(data.message || 'Error creating user');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error creating user: ' + error.message);
+    });
+}
+
+function addExistingAssessor() {
+    const select = document.getElementById('existingAssessorSelect');
+    const selected = select.options[select.selectedIndex];
+    const relationship = document.getElementById('existingAssessorRelationship').value;
+    
+    if (!selected || !relationship) {
+        alert('Please select an assessor and specify their relationship!');
+        return;
+    }
+    
+    const userId = selected.value;
+    const userName = selected.dataset.name;
+    const userEmail = selected.dataset.email;
+    
+    selectedAssessors.set(parseInt(userId), { 
+        name: userName, 
+        email: userEmail, 
+        relationship: relationship 
+    });
+    updateAssessorsDisplay();
+    updateUserSelects(getCurrentUsers());
+    checkFormProgress();
+    
+    // Clear the selection and relationship
+    select.selectedIndex = -1;
+    document.getElementById('existingAssessorRelationship').value = '';
+    
+    bootstrap.Modal.getInstance(document.getElementById('addAssessorModal')).hide();
+}
+
+function addNewAssessor() {
+    const name = document.getElementById('assessorName').value.trim();
+    const email = document.getElementById('assessorEmail').value.trim();
+    const role = document.getElementById('assessorRole').value;
+    const relationship = document.getElementById('assessorRelationship').value;
+    const companyId = document.getElementById('company_id').value;
+    
+    console.log('DEBUG: Assessor form values:', { name, email, role, relationship, companyId });
+    
+    if (!name || !email || !companyId || !relationship) {
+        alert('Name, email, company, and assessor relationship are required!');
+        return;
+    }
+    
+    const requestData = { name, email, role, company_id: parseInt(companyId) };
+    console.log('DEBUG: Sending assessor request:', requestData);
+    
+    fetch('/api/users', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => {
+        console.log('DEBUG: Assessor response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('DEBUG: Assessor response data:', data);
+        if (data.success) {
+            selectedAssessors.set(data.user.id, { 
+                name: data.user.name, 
+                email: data.user.email, 
+                relationship: relationship 
+            });
+            updateAssessorsDisplay();
+            checkFormProgress();
+            
+            bootstrap.Modal.getInstance(document.getElementById('addAssessorModal')).hide();
+            document.getElementById('addAssessorForm').reset();
+        } else {
+            alert(data.message || 'Error creating user');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error creating user: ' + error.message);
+    });
+}
+
+function updateAssesseesDisplay() {
+    const container = document.getElementById('selected-assessees');
+    const message = document.getElementById('no-assessees-message');
+    const addButton = document.querySelector('button[onclick="openAddAssesseeModal()"]');
+    
+    if (selectedAssessees.size === 0) {
+        message.style.display = 'block';
+        container.innerHTML = message.outerHTML;
+        // Enable the add button when no assessee is selected
+        if (addButton) {
+            addButton.disabled = false;
+            addButton.title = '';
+            addButton.classList.remove('disabled');
+        }
+    } else {
+        // Disable the add button when one assessee is already selected
+        if (addButton) {
+            addButton.disabled = true;
+            addButton.title = 'Only one assessee can be selected per assessment';
+            addButton.classList.add('disabled');
+        }
+        
+        let html = '';
+        selectedAssessees.forEach((user, id) => {
+            html += `
+                <div class="badge bg-success me-2 mb-2 p-2">
+                    <i class="fas fa-user-check me-1"></i>${user.name} (${user.email})
+                    <button type="button" class="btn-close btn-close-white ms-2" onclick="removeAssessee(${id})"></button>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+    
+    // Update hidden input
+    document.getElementById('assessees-input').value = Array.from(selectedAssessees.keys()).join(',');
+    
+    // Update participants summary
+    updateParticipantsSummary();
+}
+
+function updateAssessorsDisplay() {
+    const container = document.getElementById('selected-assessors');
+    const message = document.getElementById('no-assessors-message');
+    
+    if (selectedAssessors.size === 0) {
+        message.style.display = 'block';
+        container.innerHTML = message.outerHTML;
+    } else {
+        let html = '';
+        selectedAssessors.forEach((user, id) => {
+            const relationshipText = user.relationship ? ` - ${user.relationship}` : '';
+            let badgeClass = 'bg-info';
+            let closeButtonClass = 'btn-close-white';
+            
+            // Different colors for different relationship types
+            if (user.relationship === 'Manager') {
+                badgeClass = 'bg-primary';
+            } else if (user.relationship === 'Peer') {
+                badgeClass = 'bg-success';
+            } else if (user.relationship === 'Direct Report') {
+                badgeClass = 'bg-warning text-dark';
+                closeButtonClass = 'btn-close'; // Dark close button for light background
+            }
+            
+            html += `
+                <div class="badge ${badgeClass} me-2 mb-2 p-2">
+                    <i class="fas fa-user-tie me-1"></i>${user.name} (${user.email})${relationshipText}
+                    <button type="button" class="btn-close ${closeButtonClass} ms-2" onclick="removeAssessor(${id})"></button>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+    
+    // Update hidden input - now include relationships
+    const assessorData = Array.from(selectedAssessors.entries()).map(([id, user]) => ({
+        id: id,
+        relationship: user.relationship || ''
+    }));
+    document.getElementById('assessors-input').value = JSON.stringify(assessorData);
+    
+    // Update participants summary
+    updateParticipantsSummary();
+}
+
+function removeAssessee(id) {
+    selectedAssessees.delete(id);
+    updateAssesseesDisplay();
+    updateUserSelects(getCurrentUsers());
+    checkFormProgress();
+}
+
+function removeAssessor(id) {
+    selectedAssessors.delete(id);
+    updateAssessorsDisplay();
+    updateUserSelects(getCurrentUsers());
+    checkFormProgress();
+}
+
+function updateParticipantsSummary() {
+    const summarySection = document.getElementById('participants-summary');
+    const summaryBody = document.getElementById('participants-summary-body');
+    
+    if (selectedAssessees.size > 0 && selectedAssessors.size > 0) {
+        summarySection.style.display = 'block';
+        
+        let html = '';
+        let totalAssessments = 0;
+        
+        selectedAssessees.forEach((assessee, assesseeId) => {
+            // Self-assessment row
+            html += `
+                <tr>
+                    <td><strong>${assessee.name}</strong><br><small class="text-muted">${assessee.email}</small></td>
+                    <td><span class="badge bg-success">Self-Assessment</span></td>
+                    <td><i class="fas fa-user-check me-1"></i>Self Evaluation</td>
+                    <td><small class="text-muted">Auto-generated</small></td>
+                </tr>
+            `;
+            totalAssessments++;
+            
+            // Assessor rows for this assessee
+            selectedAssessors.forEach((assessor, assessorId) => {
+                const relationshipBadge = assessor.relationship ? 
+                    `<span class="badge bg-secondary ms-1">${assessor.relationship}</span>` : '';
+                html += `
+                    <tr>
+                        <td><strong>${assessee.name}</strong><br><small class="text-muted">${assessee.email}</small></td>
+                        <td><strong>${assessor.name}</strong><br><small class="text-muted">${assessor.email}</small>${relationshipBadge}</td>
+                        <td><i class="fas fa-user-tie me-1"></i>360° Feedback</td>
+                        <td><small class="text-muted">${assessor.relationship || 'Peer evaluation'}</small></td>
+                    </tr>
+                `;
+                totalAssessments++;
+            });
+        });
+        
+        summaryBody.innerHTML = html;
+        
+        // Update counters
+        document.getElementById('assessee-count').textContent = selectedAssessees.size;
+        document.getElementById('assessor-count').textContent = selectedAssessors.size;
+        document.getElementById('total-assessments').textContent = totalAssessments;
+        
+        // Calculate unique participants for invitations (assessees + assessors, no duplicates)
+        const allParticipants = new Set([...selectedAssessees.keys(), ...selectedAssessors.keys()]);
+        document.getElementById('invitation-count').textContent = allParticipants.size;
+        
+    } else {
+        summarySection.style.display = 'none';
+        
+        // Reset counters
+        document.getElementById('assessee-count').textContent = '0';
+        document.getElementById('assessor-count').textContent = '0';
+        document.getElementById('total-assessments').textContent = '0';
+        document.getElementById('invitation-count').textContent = '0';
+    }
+}
+
+function checkFormProgress() {
+    if (selectedAssessees.size > 0 && selectedAssessors.size > 0) {
+        document.getElementById('details-section').style.display = 'block';
+        document.getElementById('create-section').style.display = 'block';
+        updateParticipantsSummary();
+    } else {
+        hideSubsequentSections();
+    }
+}
+
+function hideSubsequentSections() {
+    document.getElementById('details-section').style.display = 'none';
+    document.getElementById('questions-section').style.display = 'none';
+    document.getElementById('create-section').style.display = 'none';
+    document.getElementById('participants-summary').style.display = 'none';
+}
+
+function getCurrentUsers() {
+    // This would need to be implemented to return current users for refresh
+    return [];
+}
+
+// Assessment preview function
+function previewAssessment() {
+    const title = document.getElementById('title').value || 'Untitled Assessment';
+    const description = document.getElementById('description').value || 'No description';
+    const company = document.getElementById('company_id').options[document.getElementById('company_id').selectedIndex]?.text || 'No company selected';
+    const language = document.getElementById('language').value;
+    const deadline = document.getElementById('deadline').value;
+    const useTemplate = document.getElementById('use_template').checked;
+    const sendInvitations = document.getElementById('send_invitations').checked;
+    const allowSelfReg = document.getElementById('allow_self_registration').checked;
+    
+    let previewHtml = `
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle me-2"></i>Assessment Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Title:</strong> ${title}</p>
+                        <p><strong>Description:</strong> ${description}</p>
+                        <p><strong>Company:</strong> ${company}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Language:</strong> ${language === 'en' ? 'English' : 'Bosanski'}</p>
+                        <p><strong>Deadline:</strong> ${deadline ? new Date(deadline).toLocaleString() : 'No deadline set'}</p>
+                        <p><strong>Questions:</strong> ${useTemplate ? 'Using predefined template' : 'Custom questions'}</p>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <p><strong>Send Invitations:</strong> ${sendInvitations ? '✅ Yes, immediately' : '❌ No, send later'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Self-Registration:</strong> ${allowSelfReg ? '✅ Allowed' : '❌ Not allowed'}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-users me-2"></i>Participants & Assessment Structure</h5>
+            </div>
+            <div class="card-body">
+    `;
+    
+    // Add participant details from the summary table
+    if (selectedAssessees.size > 0 && selectedAssessors.size > 0) {
+        previewHtml += document.getElementById('participants-summary').innerHTML;
+    } else {
+        previewHtml += '<p class="text-muted">No participants configured yet.</p>';
+    }
+    
+    previewHtml += `
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('preview-content').innerHTML = previewHtml;
+    new bootstrap.Modal(document.getElementById('assessmentPreviewModal')).show();
+}
+
+// Template and question management
+document.getElementById('use_template').addEventListener('change', function() {
+    const templatePreview = document.getElementById('template-preview');
+    const questionsSection = document.getElementById('questions-section');
+    
+    if (this.checked) {
+        templatePreview.style.display = 'block';
+        questionsSection.style.display = 'none';
+    } else {
+        templatePreview.style.display = 'none';
+        questionsSection.style.display = 'block';
+        if (document.querySelectorAll('.question-item').length === 0) {
+            addQuestion();
+        }
+    }
+});
+
+document.getElementById('language').addEventListener('change', function() {
+    const language = this.value;
+    const englishPreview = document.getElementById('english-preview');
+    const bosnianPreview = document.getElementById('bosnian-preview');
+    
+    if (language === 'bs') {
+        englishPreview.style.display = 'none';
+        bosnianPreview.style.display = 'block';
+    } else {
+        englishPreview.style.display = 'block';
+        bosnianPreview.style.display = 'none';
+    }
+});
 
 function addQuestion() {
     const container = document.getElementById('questionsContainer');
@@ -235,16 +1155,13 @@ function addQuestion() {
     container.insertAdjacentHTML('beforeend', questionHtml);
     noQuestionsMessage.style.display = 'none';
     questionCounter++;
-    updateQuestionNumbers();
 }
 
 function removeQuestion(index) {
     const questionElement = document.getElementById(`question_${index}`);
     if (questionElement) {
         questionElement.remove();
-        updateQuestionNumbers();
         
-        // Show no questions message if no questions left
         const container = document.getElementById('questionsContainer');
         if (container.children.length === 0) {
             document.getElementById('noQuestionsMessage').style.display = 'block';
@@ -261,54 +1178,18 @@ function handleQuestionTypeChange(index, type) {
     }
 }
 
-function updateQuestionNumbers() {
-    const questions = document.querySelectorAll('.question-item');
-    questions.forEach((question, index) => {
-        const header = question.querySelector('h6');
-        if (header) {
-            header.textContent = `Question ${index + 1}`;
-        }
-    });
-}
-
-// Add initial question
-document.addEventListener('DOMContentLoaded', function() {
-    // Only add initial question if not using template
-    if (!document.getElementById('use_template').checked) {
-        addQuestion();
+// Form submission
+document.getElementById('assessmentForm').addEventListener('submit', function(e) {
+    if (selectedAssessees.size === 0) {
+        e.preventDefault();
+        alert('Please select at least one assessee.');
+        return;
     }
-});
-
-// Handle language change for template preview
-document.getElementById('language').addEventListener('change', function() {
-    const language = this.value;
-    const englishPreview = document.getElementById('english-preview');
-    const bosnianPreview = document.getElementById('bosnian-preview');
     
-    if (language === 'bs') {
-        englishPreview.style.display = 'none';
-        bosnianPreview.style.display = 'block';
-    } else {
-        englishPreview.style.display = 'block';
-        bosnianPreview.style.display = 'none';
-    }
-});
-
-// Handle template checkbox toggle
-document.getElementById('use_template').addEventListener('change', function() {
-    const templatePreview = document.getElementById('template-preview');
-    const questionsSection = document.getElementById('questions-section');
-    
-    if (this.checked) {
-        templatePreview.style.display = 'block';
-        questionsSection.style.display = 'none';
-    } else {
-        templatePreview.style.display = 'none';
-        questionsSection.style.display = 'block';
-        // Add first question when switching to custom
-        if (document.querySelectorAll('.question-item').length === 0) {
-            addQuestion();
-        }
+    if (selectedAssessors.size === 0) {
+        e.preventDefault();
+        alert('Please select at least one assessor.');
+        return;
     }
 });
 </script>

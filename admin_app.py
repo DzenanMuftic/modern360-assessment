@@ -52,6 +52,19 @@ admin_app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
 db = SQLAlchemy(admin_app)
 mail = Mail(admin_app)
 
+# Add custom Jinja2 functions
+@admin_app.template_global()
+def moment():
+    """Return current datetime for template comparisons"""
+    return datetime.utcnow()
+
+@admin_app.template_filter('datetime')
+def datetime_filter(dt, format='%Y-%m-%d %H:%M'):
+    """Format datetime for templates"""
+    if dt is None:
+        return ""
+    return dt.strftime(format)
+
 # Import models from main app (we'll use the same database)
 class Company(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -109,6 +122,7 @@ class AssessmentParticipant(db.Model):
     assessment_id = db.Column(db.Integer, db.ForeignKey('assessment.id'), nullable=False)
     assessee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     assessor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # Null for self-assessment
+    assessor_relationship = db.Column(db.String(50), nullable=True)  # Manager, Peer, Direct Report
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Status tracking
@@ -123,6 +137,7 @@ class Question(db.Model):
     question_text = db.Column(db.Text, nullable=False)
     question_group = db.Column(db.String(100), nullable=True)  # Question category/group
     question_type = db.Column(db.String(50), nullable=False)  # rating, text, multiple_choice
+    language = db.Column(db.String(10), default='en')  # Language code (en, bs, etc.)
     options = db.Column(db.Text)  # JSON string for multiple choice options
     order = db.Column(db.Integer, default=0)
 
@@ -410,6 +425,118 @@ def admin_assessments():
     return render_template('admin_assessments.html', assessments=assessments, 
                          companies=companies, selected_company=selected_company)
 
+@admin_app.route('/api/company/<int:company_id>/users')
+@admin_required
+def api_company_users(company_id):
+    """API endpoint to get users for a specific company"""
+    users = User.query.filter_by(company_id=company_id, is_active=True).all()
+    return jsonify({
+        'users': [
+            {
+                'id': user.id,
+                'name': user.name,
+                'email': user.email,
+                'role': user.role,
+                'is_active': user.is_active
+            }
+            for user in users
+        ]
+    })
+
+@admin_app.route('/api/companies', methods=['POST'])
+@admin_required
+def api_create_company():
+    """API endpoint to create a new company"""
+    data = request.get_json()
+    name = data.get('name', '').strip()
+    description = data.get('description', '').strip()
+    
+    if not name:
+        return jsonify({'success': False, 'message': 'Company name is required!'})
+    
+    # Check if company already exists
+    existing_company = Company.query.filter_by(name=name).first()
+    if existing_company:
+        return jsonify({'success': False, 'message': 'Company with this name already exists!'})
+    
+    # Create new company
+    company = Company(name=name, description=description)
+    db.session.add(company)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'company': {
+            'id': company.id,
+            'name': company.name,
+            'description': company.description
+        }
+    })
+
+@admin_app.route('/api/users', methods=['POST'])
+@admin_required
+def api_create_user():
+    """API endpoint to create a new user"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'message': 'No JSON data received!'})
+        
+        email = data.get('email', '').strip().lower()
+        name = data.get('name', '').strip()
+        company_id = data.get('company_id')
+        role = data.get('role', 'user')
+        
+        print(f"DEBUG: Received data - name: {name}, email: {email}, company_id: {company_id}, role: {role}")
+        
+        if not email or not name or not company_id:
+            return jsonify({'success': False, 'message': 'Email, name, and company are required!'})
+        
+        # Convert company_id to int
+        try:
+            company_id = int(company_id)
+        except (ValueError, TypeError):
+            return jsonify({'success': False, 'message': 'Invalid company ID!'})
+        
+        # Check if user already exists
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            return jsonify({'success': False, 'message': 'User with this email already exists!'})
+        
+        # Get company name for legacy field
+        company = Company.query.get(company_id)
+        if not company:
+            return jsonify({'success': False, 'message': 'Company not found!'})
+        
+        # Create new user
+        user = User(
+            email=email, 
+            name=name, 
+            company=company.name,  # Legacy field
+            company_id=company_id, 
+            role=role
+        )
+        db.session.add(user)
+        db.session.commit()
+        
+        print(f"DEBUG: Successfully created user - ID: {user.id}, Name: {user.name}, Email: {user.email}")
+        
+        return jsonify({
+            'success': True,
+            'user': {
+                'id': user.id,
+                'name': user.name,
+                'email': user.email,
+                'role': user.role
+            }
+        })
+        
+    except Exception as e:
+        print(f"ERROR: Exception in api_create_user: {e}")
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Server error: {str(e)}'})
+
 @admin_app.route('/assessments/create', methods=['GET', 'POST'])
 @admin_required
 def admin_create_assessment():
@@ -421,9 +548,45 @@ def admin_create_assessment():
         creator_id = request.form.get('creator_id', type=int)
         language = request.form.get('language', 'en')
         use_template = 'use_template' in request.form
+        send_invitations = 'send_invitations' in request.form
+        allow_self_registration = 'allow_self_registration' in request.form
+        
+        # Get selected participants
+        assessee_ids_str = request.form.get('assessees', '')
+        assessor_data_str = request.form.get('assessors', '')
+        
+        assessee_ids = [int(id.strip()) for id in assessee_ids_str.split(',') if id.strip()]
+        
+        # Parse assessor data (now includes relationships)
+        assessor_data = []
+        if assessor_data_str:
+            try:
+                assessor_data = json.loads(assessor_data_str)
+            except json.JSONDecodeError:
+                # Fallback to old format (just IDs)
+                assessor_ids = [int(id.strip()) for id in assessor_data_str.split(',') if id.strip()]
+                assessor_data = [{'id': id, 'relationship': ''} for id in assessor_ids]
         
         if not title or not company_id:
             flash('Assessment title and company are required!', 'error')
+            companies = Company.query.filter_by(is_active=True).all()
+            users = User.query.filter_by(is_active=True).all()
+            return render_template('admin_create_assessment.html', companies=companies, users=users)
+        
+        if not assessee_ids:
+            flash('One assessee must be selected!', 'error')
+            companies = Company.query.filter_by(is_active=True).all()
+            users = User.query.filter_by(is_active=True).all()
+            return render_template('admin_create_assessment.html', companies=companies, users=users)
+        
+        if len(assessee_ids) > 1:
+            flash('Only one assessee can be selected per assessment!', 'error')
+            companies = Company.query.filter_by(is_active=True).all()
+            users = User.query.filter_by(is_active=True).all()
+            return render_template('admin_create_assessment.html', companies=companies, users=users)
+        
+        if not assessor_data:
+            flash('At least one assessor must be selected!', 'error')
             companies = Company.query.filter_by(is_active=True).all()
             users = User.query.filter_by(is_active=True).all()
             return render_template('admin_create_assessment.html', companies=companies, users=users)
@@ -495,9 +658,85 @@ def admin_create_assessment():
             users = User.query.filter_by(is_active=True).all()
             return render_template('admin_create_assessment.html', companies=companies, users=users)
         
+        # Create assessment participants
+        participants_created = 0
+        
+        for assessee_id in assessee_ids:
+            assessee_id = int(assessee_id)
+            
+            # Add self-assessment participant (assessee assessing themselves)
+            self_participant = AssessmentParticipant(
+                assessment_id=assessment.id,
+                assessee_id=assessee_id,
+                assessor_id=None  # Self-assessment
+            )
+            db.session.add(self_participant)
+            participants_created += 1
+            
+            # Add assessor participants (each assessor assesses this assessee)
+            for assessor_info in assessor_data:
+                assessor_id = int(assessor_info['id'])
+                relationship = assessor_info.get('relationship', '')
+                if assessor_id != assessee_id:  # Don't add assessee as their own assessor
+                    assessor_participant = AssessmentParticipant(
+                        assessment_id=assessment.id,
+                        assessee_id=assessee_id,
+                        assessor_id=assessor_id,
+                        assessor_relationship=relationship
+                    )
+                    db.session.add(assessor_participant)
+                    participants_created += 1
+        
         db.session.commit()
-        flash(f'Assessment "{title}" created successfully with {len(questions)} questions! Now add participants.', 'success')
-        return redirect(url_for('admin_assessment_participants', assessment_id=assessment.id))
+        
+        # Send invitations if requested
+        sent_count = 0
+        if send_invitations:
+            participants = AssessmentParticipant.query.filter_by(assessment_id=assessment.id).all()
+            
+            for participant in participants:
+                # Send invitation to assessee for self-assessment
+                if not participant.assessor_id:  # Self-assessment
+                    token = secrets.token_urlsafe(32)
+                    invitation = Invitation(
+                        assessment_id=assessment.id,
+                        sender_id=1,  # Admin sender
+                        email=participant.assessee.email,
+                        token=token
+                    )
+                    db.session.add(invitation)
+                    
+                    try:
+                        send_self_assessment_invitation(participant.assessee.email, assessment, token)
+                        sent_count += 1
+                    except Exception as e:
+                        print(f"Error sending self-assessment invitation: {e}")
+                
+                # Send invitation to assessor
+                else:
+                    token = secrets.token_urlsafe(32)
+                    invitation = Invitation(
+                        assessment_id=assessment.id,
+                        sender_id=1,  # Admin sender
+                        email=participant.assessor.email,
+                        token=token
+                    )
+                    db.session.add(invitation)
+                    
+                    try:
+                        send_assessor_invitation(participant.assessor.email, assessment, 
+                                               participant.assessee.name, token)
+                        sent_count += 1
+                    except Exception as e:
+                        print(f"Error sending assessor invitation: {e}")
+            
+            db.session.commit()
+        
+        if send_invitations and sent_count > 0:
+            flash(f'Assessment "{title}" created successfully with {len(questions)} questions and {participants_created} participants! {sent_count} invitations sent.', 'success')
+        else:
+            flash(f'Assessment "{title}" created successfully with {len(questions)} questions and {participants_created} participants! Invitations can be sent later.', 'success')
+        return redirect(url_for('admin_assessments'))
     
     companies = Company.query.filter_by(is_active=True).all()
     users = User.query.filter_by(is_active=True).all()
@@ -510,6 +749,49 @@ def admin_create_assessment():
                          companies=companies, users=users,
                          bosnian_groups=[g[0] for g in bosnian_groups],
                          english_groups=[g[0] for g in english_groups])
+
+@admin_app.route('/assessments/<int:assessment_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def admin_edit_assessment(assessment_id):
+    assessment = Assessment.query.get_or_404(assessment_id)
+    
+    if request.method == 'POST':
+        assessment.title = request.form.get('title', '').strip()
+        assessment.description = request.form.get('description', '').strip()
+        company_id = request.form.get('company_id', type=int)
+        deadline_str = request.form.get('deadline')
+        
+        if not assessment.title or not company_id:
+            flash('Assessment title and company are required!', 'error')
+            companies = Company.query.filter_by(is_active=True).all()
+            users = User.query.filter_by(is_active=True).all()
+            return render_template('admin_edit_assessment.html', assessment=assessment, companies=companies, users=users)
+        
+        assessment.company_id = company_id
+        
+        # Handle deadline
+        if deadline_str:
+            try:
+                assessment.deadline = datetime.strptime(deadline_str, '%Y-%m-%dT%H:%M')
+            except ValueError:
+                flash('Invalid deadline format!', 'error')
+                companies = Company.query.filter_by(is_active=True).all()
+                users = User.query.filter_by(is_active=True).all()
+                return render_template('admin_edit_assessment.html', assessment=assessment, companies=companies, users=users)
+        else:
+            assessment.deadline = None
+        
+        # Handle active status
+        assessment.is_active = 'is_active' in request.form
+        
+        db.session.commit()
+        flash(f'Assessment "{assessment.title}" updated successfully!', 'success')
+        return redirect(url_for('admin_assessments'))
+    
+    companies = Company.query.filter_by(is_active=True).all()
+    users = User.query.filter_by(is_active=True).all()
+    
+    return render_template('admin_edit_assessment.html', assessment=assessment, companies=companies, users=users)
 
 @admin_app.route('/questions/templates')
 @admin_required
@@ -649,17 +931,31 @@ def admin_send_assessment_invitations(assessment_id):
 @admin_required
 def admin_delete_assessment(assessment_id):
     assessment = Assessment.query.get_or_404(assessment_id)
-    
-    # Delete related records
-    Question.query.filter_by(assessment_id=assessment_id).delete()
-    Invitation.query.filter_by(assessment_id=assessment_id).delete()
-    AssessmentResponse.query.filter_by(assessment_id=assessment_id).delete()
-    
     title = assessment.title
-    db.session.delete(assessment)
-    db.session.commit()
     
-    flash(f'Assessment "{title}" deleted successfully!', 'success')
+    try:
+        # Delete related records in proper order (to handle foreign key constraints)
+        # First delete responses that reference participants
+        AssessmentResponse.query.filter_by(assessment_id=assessment_id).delete()
+        
+        # Then delete participants (which might be referenced by responses)
+        AssessmentParticipant.query.filter_by(assessment_id=assessment_id).delete()
+        
+        # Delete other related records
+        Question.query.filter_by(assessment_id=assessment_id).delete()
+        Invitation.query.filter_by(assessment_id=assessment_id).delete()
+        
+        # Finally delete the assessment itself
+        db.session.delete(assessment)
+        db.session.commit()
+        
+        flash(f'Assessment "{title}" deleted successfully!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting assessment: {e}")
+        flash(f'Error deleting assessment: {str(e)}', 'error')
+    
     return redirect(url_for('admin_assessments'))
 
 @admin_app.route('/invitations')

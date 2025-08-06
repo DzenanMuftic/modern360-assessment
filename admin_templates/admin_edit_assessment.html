@@ -1,0 +1,163 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Edit Assessment - Modern360 Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2 mb-0">
+        <i class="fas fa-edit me-2 text-primary"></i>Edit Assessment
+    </h1>
+    <a href="{{ url_for('admin_assessments') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Assessments
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-clipboard-list me-2"></i>Assessment Details
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Assessment Title *</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               value="{{ assessment.title }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="3">{{ assessment.description or '' }}</textarea>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="company_id" class="form-label">Company *</label>
+                        <select class="form-select" id="company_id" name="company_id" required>
+                            <option value="">Select Company</option>
+                            {% for company in companies %}
+                            <option value="{{ company.id }}" 
+                                    {{ 'selected' if assessment.company_id == company.id else '' }}>
+                                {{ company.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="deadline" class="form-label">Deadline</label>
+                        <input type="datetime-local" class="form-control" id="deadline" name="deadline"
+                               value="{{ assessment.deadline.strftime('%Y-%m-%dT%H:%M') if assessment.deadline else '' }}">
+                        <div class="form-text">Optional deadline for completion</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active"
+                                   {{ 'checked' if assessment.is_active else '' }}>
+                            <label class="form-check-label" for="is_active">
+                                Active Assessment
+                            </label>
+                        </div>
+                        <div class="form-text">Inactive assessments cannot receive new responses</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Assessment Info -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Assessment Information</h6>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <strong>Created:</strong><br>
+                                {{ assessment.created_at.strftime('%m/%d/%Y %H:%M') }}
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Creator:</strong><br>
+                                {{ assessment.creator.name }}
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Questions:</strong><br>
+                                {{ assessment.questions|length }} questions
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Responses:</strong><br>
+                                {{ assessment.responses|length }} submitted
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Questions Preview -->
+            {% if assessment.questions %}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h6><i class="fas fa-question-circle me-2"></i>Assessment Questions ({{ assessment.questions|length }})</h6>
+                    <div class="alert alert-light">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th width="5%">#</th>
+                                        <th width="15%">Group</th>
+                                        <th width="60%">Question</th>
+                                        <th width="10%">Type</th>
+                                        <th width="10%">Language</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for question in assessment.questions|sort(attribute='order') %}
+                                    <tr>
+                                        <td>{{ question.order + 1 }}</td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ question.question_group or 'General' }}</span>
+                                        </td>
+                                        <td>{{ question.question_text[:80] }}{{ '...' if question.question_text|length > 80 else '' }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ question.question_type }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">{{ question.language.upper() }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Note: Questions cannot be edited here. Create a new assessment with updated questions if needed.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="d-flex justify-content-between mt-4">
+                <div>
+                    <a href="{{ url_for('admin_assessment_participants', assessment_id=assessment.id) }}" 
+                       class="btn btn-info">
+                        <i class="fas fa-users me-2"></i>Manage Participants
+                    </a>
+                </div>
+                <div>
+                    <a href="{{ url_for('admin_assessments') }}" class="btn btn-secondary me-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Update Assessment
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
