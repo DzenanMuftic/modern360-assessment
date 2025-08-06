@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Modern360 Assessment - Universal Startup Script
-Handles development, production, and deployment scenarios
-"""
-
 import os
 import sys
 import argparse
@@ -187,6 +181,10 @@ def main():
     
     if args.setup_db:
         setup_database()
+        # If only setting up database, exit successfully
+        if not any([args.mode != 'dev', args.install]):
+            print("✅ Database setup completed successfully")
+            return
     
     if args.mode == 'dev':
         print("🔥 Starting in DEVELOPMENT mode")
