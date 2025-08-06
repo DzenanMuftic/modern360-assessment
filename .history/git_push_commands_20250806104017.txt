@@ -1,0 +1,34 @@
+# Git Push Commands for Modern360 Assessment
+
+## After creating a GitHub repository, run these commands:
+
+# Add remote repository (replace YOUR_GITHUB_URL with your actual repository URL)
+git remote add origin YOUR_GITHUB_URL
+
+# Rename branch to main (GitHub standard)
+git branch -M main
+
+# Push to remote repository
+git push -u origin main
+
+## Example with a real URL:
+# git remote add origin https://github.com/DzenanMuftic/modern360-assessment.git
+# git branch -M main  
+# git push -u origin main
+
+## Current Status:
+- All files are committed locally ✅
+- Commit: 000dce6 "feat: Premium high-resolution desktop admin login interface"
+- 298 files, 63,873 insertions ready to push
+- Includes complete admin system with premium UI
+
+## What's included in this push:
+- Premium admin login interface (high-resolution desktop optimized)
+- Complete admin workflow system
+- Company and user management
+- Assessment creation and management
+- Bilingual question templates (English/Bosnian)
+- Database migration scripts
+- Professional UI components with glassmorphism
+- Email integration system
+- Security features and enterprise branding
