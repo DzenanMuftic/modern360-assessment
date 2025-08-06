@@ -145,3 +145,6 @@ modern360.db
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Development history files
+.history/
