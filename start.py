@@ -149,14 +149,25 @@ def run_admin_only():
         admin_app.run(host='0.0.0.0', port=port, debug=True)
 
 def setup_database():
-    """Initialize database"""
+    """Initialize database and ensure template questions"""
     print("🗄️  Setting up database...")
     try:
-        from app import db
-        db.create_all()
+        from app import app, db
+        with app.app_context():
+            db.create_all()
+            print("✅ Database tables created")
+            
+            # Ensure template questions are loaded
+            print("📝 Ensuring template questions are loaded...")
+            from ensure_template_questions import add_predefined_questions
+            add_predefined_questions()
+            print("✅ Template questions verified")
+            
         print("✅ Database setup complete")
     except Exception as e:
         print(f"❌ Database setup failed: {e}")
+        import traceback
+        traceback.print_exc()
 
 def main():
     """Main function with argument parsing"""
